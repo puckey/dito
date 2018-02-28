@@ -5,7 +5,7 @@ import './components'
 import './types'
 import TypeComponent from './TypeComponent'
 import DitoRoot from './components/DitoRoot'
-import { hyphenate, camelize } from '@ditojs/utils'
+import { isString, hyphenate, camelize, deindent } from '@ditojs/utils'
 import { processComponent } from './schema'
 
 Vue.config.productionTip = false
@@ -22,8 +22,12 @@ export async function setup(el, options = {}) {
   const {
     views = {},
     api = {},
-    base = '/'
+    base = '/',
+    module
   } = options
+
+  // Activate hot reloading if the module is provided.
+  module?.hot?.accept()
 
   // Setting `api.normalizePaths = true (plural) sets both:
   // `api.normalizePath = hyphenate` and `api.denormalizePath = camelize`
@@ -53,6 +57,9 @@ export async function setup(el, options = {}) {
   }
   await Promise.all(promises)
 
+  // Determine id of root container, as required by hot-reloading:
+  const id = isString(el) ? el.substring(1) : el.id
+
   new Vue({
     el,
     router: new VueRouter({
@@ -60,9 +67,15 @@ export async function setup(el, options = {}) {
       routes,
       base
     }),
-    template: '<dito-root :views="views" :options="options" />',
+    // Preserve the root container's id, as required by hot-reloading:
+    template: deindent`
+      <div :id="id">
+        <dito-root :views="views" :options="options" />
+      </div>
+    `,
     components: { DitoRoot },
     data: {
+      id,
       views,
       options
     }

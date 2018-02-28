@@ -34,6 +34,9 @@ export default DitoComponent.component('dito-root', {
 
   created() {
     this.appState.title = document.title || 'Dito.js Admin'
+    // With hot-reloading, it looks like destroyed hooks aren't always called
+    // for route components so reset the array of registered components instead.
+    this.appState.routeComponents = []
     const {
       spinner: {
         size = '8px',
