@@ -165,6 +165,9 @@ export type ApplicationConfig = {
   storages?: StorageConfigs
   assets?: {
     /**
+     * Threshold after which unused assets that haven't seen changes for given
+     * timeframe are removed.
+     *
      * @example '1 hr 20 mins'
      * @default `0`
      * @see https://www.npmjs.com/package/parse-duration
