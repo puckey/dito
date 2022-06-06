@@ -1037,7 +1037,7 @@ export type DitoContext<$State extends State> = {
   wasNotified: boolean
 }
 
-export type View<$Item = any> =
+export type View<$Item = any> = { resource?: Resource } & (
   | InputSchema<CreateState<$Item>>
   | RadioSchema<CreateState<$Item>>
   | CheckboxSchema<CreateState<$Item>>
@@ -1055,6 +1055,8 @@ export type View<$Item = any> =
   | ButtonSchema<CreateState<$Item>>
   | SwitchSchema<CreateState<$Item>>
   | DateSchema<CreateState<$Item>>
+  | ComponentSchema<CreateState<$Item>>
+)
 
 export type Component<$State extends State = CreateState> =
   | InputSchema<$State>
