@@ -855,10 +855,9 @@ export interface ModelOptions extends objection.ModelOptions {
 type ModelHookFunction<$Model extends Model> = (
   args: objection.StaticHookArguments<$Model>
 ) => void
-export type ModelHooks<$Model extends Model> = Record<
-  `${'before' | 'after'}:${'find' | 'insert' | 'update' | 'delete'}`,
-  ModelHookFunction<$Model>
->
+export type ModelHooks<$Model extends Model> = {
+  [key in `${'before' | 'after'}:${'find' | 'insert' | 'update' | 'delete'}`]?: ModelHookFunction<$Model>
+}
 
 export class Model extends objection.Model {
   /**
