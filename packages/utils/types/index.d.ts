@@ -179,7 +179,7 @@ export function pick(...args: any[]): any
 
 export function mapKeys<T extends Dictionary<any>, K extends keyof any>(
   object: T,
-  callback?: (value: T[keyof T], key: keyof T, object: T) => K
+  callback?: (key: keyof T, value: T[keyof T], object: T) => K
 ): Record<K, T[keyof T]>
 
 export function mapValues<T extends Dictionary<any>, K>(
