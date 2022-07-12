@@ -659,6 +659,14 @@ export type MarkupSchema<$State extends State = CreateState> =
     }
   }
 
+export type LabelSchema<$State extends State = CreateState> =
+BaseSchema<$State> & {
+  /**
+   * The type of the component.
+   */
+  type: 'label'
+}
+
 export type UploadSchema<$State extends State = CreateState> =
   BaseSchema<$State> & {
     /**
@@ -1056,6 +1064,7 @@ export type View<$Item = any> = { resource?: Resource } & (
   | SwitchSchema<CreateState<$Item>>
   | DateSchema<CreateState<$Item>>
   | ComponentSchema<CreateState<$Item>>
+  | LabelSchem<CreateState<$Item>>
 )
 
 export type Component<$State extends State = CreateState> =
@@ -1077,6 +1086,7 @@ export type Component<$State extends State = CreateState> =
   | SwitchSchema<$State>
   | DateSchema<$State>
   | ComponentSchema<$State>
+  | LabelSchem<$State>
 
 export type Components<$State extends State> = {
   [$name in SelectItemKeys<$State['item']>]?: Component<
@@ -1177,6 +1187,7 @@ export type SchemaByType<$State extends State = CreateState> = {
   text: InputSchema<$State>
   textarea: TextareaSchema<$State>
   upload: UploadSchema<$State>
+  label: LabelSchema<$State>
   unknown: never
 }
 
