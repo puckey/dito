@@ -1166,7 +1166,7 @@ export type Resource =
     }>
 
 export class DitoAdmin<
-  $Views extends Record<string, any> = Record<string, View>
+  $Views extends Record<string, any> = Record<string, OrPromiseOf<View>>
 > {
   api: ApiConfig
   // TODO: finish off Vue types
