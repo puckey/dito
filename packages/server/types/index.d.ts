@@ -157,6 +157,8 @@ export type ApplicationConfig = {
      * @defaultValue `false`
      */
     normalizeDbNames?: boolean | Parameters<KnexSnakeCaseMappersFactory>
+    // See https://github.com/brianc/node-pg-types/blob/master/index.d.ts#L67
+    typeParsers?: Record<number, <I extends (string | Buffer)>(value: I) => any>
   }
   /**
    * Service configurations. Pass `false` as a value to disable a service.
