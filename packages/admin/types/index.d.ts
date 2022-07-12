@@ -983,9 +983,19 @@ export type ItemAccessor<
 > = (params: DitoContext<$State> & $Params) => $ReturnValue
 
 export type DitoContext<$State extends State> = {
+  /**
+   * `nested` is `true` when the data-path points a value inside an item, and
+   * `false` when it points to the item itself.
+   */
+  nested: boolean
   value: $State['value']
-  name: $State['name']
   dataPath: string
+  name: $State['name']
+  index: any
+  itemDataPath: any
+  parentItemDataPath: any
+  itemIndex: any
+  parentItemIndex: any
   item: {
     [$Key in SelectItemKeys<$State['item']>]: $State['item'][$Key]
   }
@@ -999,10 +1009,11 @@ export type DitoContext<$State extends State> = {
    */
   parentItem: any
   rootItem: any
-  list: any
-  index: any
+  processedItem: any
+  clipboardItem: any
   user: any
   api: ApiConfig
+  views: any
   itemLabel: string | null
   formLabel: string | null
   component: any
@@ -1011,10 +1022,16 @@ export type DitoContext<$State extends State> = {
   viewComponent: any
   dialogComponent: any
   panelComponent: Vue | null
+  resourceComponent: Vue | null
   sourceComponent: Vue | null
+  option: any
   options: any
   query: string
   error: any | null
+  wasNotified: boolean
+
+  // Helper Methods
+
   request<T extends any>(options: {
     /**
      * Allows caching of loaded data on two levels:
@@ -1031,18 +1048,18 @@ export type DitoContext<$State extends State> = {
     params?: any
     data?: any
   }): Promise<T>
+  format: typeof utilsFormat
   navigate(location: string | { path: string }): Promise<boolean>
   download: {
     (url: string): void
     (options: { url: string; filename: string }): void
   }
+  getResourceUrl: any
   notify(options: {
     type?: LiteralUnion<'warning' | 'error' | 'info' | 'success'>
     title?: string
     text: OrArrayOf<string>
   }): void
-  format: typeof utilsFormat
-  wasNotified: boolean
 }
 
 export type View<$Item = any> = { resource?: Resource } & (
