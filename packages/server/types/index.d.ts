@@ -6,23 +6,23 @@
 // Export the entire Dito namespace.
 
 import { DateFormat } from '@ditojs/utils'
+import koaCors from '@koa/cors'
 import * as Ajv from 'ajv'
 import * as aws from 'aws-sdk'
 import * as dbErrors from 'db-errors'
 import * as EventEmitter2 from 'eventemitter2'
-import * as Knex from 'knex'
-import { KnexSnakeCaseMappersFactory } from 'objection'
 import helmet from 'helmet'
+import * as Knex from 'knex'
 import * as Koa from 'koa'
-import koaCompress from 'koa-compress'
-import koaCors from '@koa/cors'
-import koaResponseTime from 'koa-response-time'
-import koaLogger from 'koa-logger'
-import koaSession from 'koa-session'
-import koaPinoLogger from 'koa-pino-logger'
 import koaBodyParser from 'koa-bodyparser'
+import koaCompress from 'koa-compress'
+import koaLogger from 'koa-logger'
+import koaPinoLogger from 'koa-pino-logger'
+import koaResponseTime from 'koa-response-time'
+import koaSession from 'koa-session'
 import * as objection from 'objection'
-import { SetOptional, Class, SetReturnType, ConditionalKeys } from 'type-fest'
+import { KnexSnakeCaseMappersFactory } from 'objection'
+import { Class, ConditionalKeys, SetOptional, SetReturnType } from 'type-fest'
 
 export type Page<$Model extends Model> = {
   total: number
@@ -351,7 +351,7 @@ export interface ApiConfig {
       /**
        * @defaultValue `'post'`
        */
-      method?: HTTPVerb
+      method?: HTTPMethod
     }
     logout?: {
       /**
@@ -361,7 +361,7 @@ export interface ApiConfig {
       /**
        * @defaultValue `'post'`
        */
-      method?: HTTPVerb
+      method?: HTTPMethod
     }
     session?: {
       /**
@@ -371,7 +371,7 @@ export interface ApiConfig {
       /**
        * @defaultValue `'get'`
        */
-      method?: HTTPVerb
+      method?: HTTPMethod
     }
   }
   /**
@@ -1115,7 +1115,7 @@ export class Controller {
   // TODO: type reflectActionsObject
   reflectActionsObject(): any
   setupRoute<$ControllerAction extends ControllerAction<any>>(
-    verb: HTTPVerb,
+    method: HTTPMethod,
     url: string,
     transacted: boolean,
     authorize: Authorize,
@@ -1193,13 +1193,13 @@ export type Authorize =
 
 export type BaseControllerActionOptions = {
   /**
-   * The HTTP verb (`'get'`, `'post'`, `'put'`, `'delete'` or `'patch'`) to
+   * The HTTP method (`'get'`, `'post'`, `'put'`, `'delete'` or `'patch'`) to
    * which the action should listen and optionally the path to which it is
    * mapped, defined in relation to the route path of its controller. By
    * default, the normalized method name is used as the action's path, and
-   * the `'get'` verb is assigned if none is provided.
+   * the `'get'` method is assigned if none is provided.
    */
-  action?: OrArrayOf<LiteralUnion<HTTPVerb>>
+  action?: OrArrayOf<LiteralUnion<HTTPMethod>>
   /**
    * Determines whether or how the request is authorized. This value can
    * either be one of the values as described below, an array of them or
@@ -1936,13 +1936,13 @@ export type Mixin = (
 
 /**
  * Apply the action mixin to a controller action, in order to
- * determine which HTTP verb (`'get'`, `'post'`, `'put'`, `'delete'` or
+ * determine which HTTP method (`'get'`, `'post'`, `'put'`, `'delete'` or
  * `'patch'`) the action should listen to and optionally the path to which it
  * is mapped, defined in relation to the route path of its controller. By
  * default, the normalized method name is used as the action's path, and
- * the `'get'` verb is assigned if none is provided.
+ * the `'get'` method is assigned if none is provided.
  */
-export const action: (verb: string, path: string) => Mixin
+export const action: (method: string, path: string) => Mixin
 
 /**
  * Apply the authorize mixin to a controller action, in order to
@@ -2007,7 +2007,7 @@ export const transacted: () => Mixin
 
 /*------------------------------ End Mixins -----------------------------*/
 
-export type HTTPVerb = 'get' | 'post' | 'put' | 'delete' | 'patch'
+export type HTTPMethod = 'get' | 'post' | 'put' | 'delete' | 'patch'
 
 export interface KnexHelper {
   getDialect(): string
