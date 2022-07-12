@@ -1055,14 +1055,6 @@ export type ControllerAction<$Controller extends Controller> =
   | ControllerActionOptions<$Controller>
   | ControllerActionHandler<$Controller>
 
-export type ControllerActionName =
-  | 'find'
-  | 'delete'
-  | 'insert'
-  | 'update'
-  | 'patch'
-export type AllowedControllerActionName =
-  LiteralUnion<ControllerActionName>
 export class Controller {
   /**
    * Optionally provide the controller path. A default is deducted from
@@ -1088,7 +1080,7 @@ export class Controller {
    * A list of allowed actions. If provided, only the action names listed here
    * as strings will be mapped to routes, everything else will be omitted.
    */
-  allow?: AllowedControllerActionName[]
+  allow?: ControllerActionName[]
 
   /**
    * Authorization
@@ -1284,17 +1276,19 @@ export type MemberActionParameter<M extends Model> =
       modify?: (query: QueryBuilder<M>) => QueryBuilder<M>
     }
 
+export type ModelControllerAction<
+  $ModelController extends ModelController<Model>
+> =
+  | ModelControllerActionOptions<$ModelController>
+  | ModelControllerActionHandler<$ModelController>;
+
 export type ModelControllerActions<
   $ModelController extends ModelController<Model> = ModelController<Model>
-> = Record<
-  string,
-  | ModelControllerActionOptions<$ModelController>
-  | ModelControllerActionHandler<$ModelController>
-  | AllowedControllerActionName[]
-  // NOTE: this is meant only for the 'authorize' key, which due to
-  // typescript limitations we cannot type stricly to the key
-  | Authorize
->
+> = {
+  [name: ControllerActionName]: ModelControllerAction,
+  allow?: ControllerActionName[],
+  authorize?: Authorize
+}
 
 type ModelControllerMemberAction<
   $ModelController extends ModelController<Model>
@@ -1314,16 +1308,20 @@ type ModelControllerMemberAction<
         })
       | ModelControllerActionHandler<$ModelController>
     )
-  | AllowedControllerActionName[]
 
 export type ModelControllerMemberActions<
   $ModelController extends ModelController<Model>
-> = Record<string, ModelControllerMemberAction<$ModelController>>
+> = {
+  [name: ControllerActionName]: ModelControllerMemberAction<$ModelController>;
+  allow?: ControllerActionName[];
+  authorize?: Authorize
+}
 
-export type ControllerActions<$Controller extends Controller> = Record<
-  string,
-  OrArrayOf<ControllerAction<$Controller>>
->
+export type ControllerActionName = `${HTTPMethod}${string}`;
+
+export type ControllerActions<$Controller extends Controller> = {
+  [name: ControllerActionName]: ControllerAction<$Controller>
+}
 
 export class UserModel extends Model {
   static options?: {
@@ -1997,7 +1995,15 @@ export const transacted: () => Mixin
 
 /*------------------------------ End Mixins -----------------------------*/
 
-export type HTTPMethod = 'get' | 'post' | 'put' | 'delete' | 'patch'
+export type HTTPMethod =
+  | 'get'
+  | 'post'
+  | 'put'
+  | 'delete'
+  | 'patch'
+  | 'options'
+  | 'trace'
+  | 'connect'
 
 export interface KnexHelper {
   getDialect(): string
