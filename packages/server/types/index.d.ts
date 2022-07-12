@@ -824,13 +824,12 @@ export type ModelFilterFunction<$Model extends Model> = (
 ) => void
 
 export type ModelFilter<$Model extends Model> =
-  | ModelFilterFunction<$Model>
-  | {
+| {
       filter: 'text' | 'date-range'
       properties?: string[]
     }
   | {
-      filter: ModelFilterFunction<$Model>
+      handler: ModelFilterFunction<$Model>
       parameters?: ActionParameter[]
       // TODO: validate type
       validate?: any
