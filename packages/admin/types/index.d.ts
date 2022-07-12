@@ -1,20 +1,17 @@
 // Type definitions for Dito.js admin
 // Project: <https://github.com/ditojs/dito/>
 
-import { AxiosResponse as Response } from 'axios'
 import {
-  format as utilsFormat,
-  DateFormat,
-  NumberFormat,
+  DateFormat, format as utilsFormat, NumberFormat,
   TimeFormat
 } from '@ditojs/utils'
-import Vue, { VueConstructor } from 'vue'
+import { AxiosResponse as Response } from 'axios'
 import {
-  IterableElement,
+  ConditionalExcept, IterableElement,
   RequireAtLeastOne,
-  SetOptional,
-  ConditionalExcept
+  SetOptional
 } from 'type-fest'
+import Vue, { VueConstructor } from 'vue'
 
 declare global {
   const dito: DitoGlobal
@@ -777,6 +774,15 @@ export type RadioSchema<$State extends State = CreateState> =
       layout?: 'horizontal' | 'vertical'
     }
 
+export type SectionSchema<$State extends State = CreateState> =
+  BaseSchema<$State> & {
+  /**
+   * The type of the component.
+   */
+  type: 'section'
+  components?: Components<CreateState<$Item>>
+}
+
 export type CheckboxSchema<$State extends State = CreateState> =
   BaseSchema<$State> & {
     /**
@@ -1086,6 +1092,7 @@ export type View<$Item = any> = { resource?: Resource } & (
   | DateSchema<CreateState<$Item>>
   | ComponentSchema<CreateState<$Item>>
   | LabelSchem<CreateState<$Item>>
+  | SectionSchema<CreateState<$Item>>
 )
 
 export type Component<$State extends State = CreateState> =
@@ -1108,6 +1115,7 @@ export type Component<$State extends State = CreateState> =
   | DateSchema<$State>
   | ComponentSchema<$State>
   | LabelSchem<$State>
+  | SectionSchema<$State>
 
 export type Components<$State extends State> = {
   [$name in SelectItemKeys<$State['item']>]?: Component<
@@ -1208,7 +1216,8 @@ export type SchemaByType<$State extends State = CreateState> = {
   text: InputSchema<$State>
   textarea: TextareaSchema<$State>
   upload: UploadSchema<$State>
-  label: LabelSchema<$State>
+  label: LabelSchema<$State>,
+  section: SectionSchema<$State>,
   unknown: never
 }
 
