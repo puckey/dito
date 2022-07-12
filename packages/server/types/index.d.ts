@@ -1194,12 +1194,16 @@ export type Authorize =
 export type BaseControllerActionOptions = {
   /**
    * The HTTP method (`'get'`, `'post'`, `'put'`, `'delete'` or `'patch'`) to
-   * which the action should listen and optionally the path to which it is
-   * mapped, defined in relation to the route path of its controller. By
-   * default, the normalized method name is used as the action's path, and
-   * the `'get'` method is assigned if none is provided.
+   * which the action should listen. By default, the `'get'` method is assigned
+   * if none is provided.
    */
-  action?: OrArrayOf<LiteralUnion<HTTPMethod>>
+  method?: HTTPMethod
+  /**
+   * The path to which the action is mapped, defined in relation to the route
+   * path of its controller. By default, the normalized method name is used as
+   * the action's path.
+   */
+  path?: string
   /**
    * Determines whether or how the request is authorized. This value can
    * either be one of the values as described below, an array of them or
