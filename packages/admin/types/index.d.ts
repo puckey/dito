@@ -504,7 +504,7 @@ export type ButtonSchema<
    */
   type: 'button' | 'submit'
   closeForm?: OrItemAccessor<$State, {}, boolean>
-  text?: string
+  text?: OrItemAccessor<$State, {}, text>
   resource?: Resource
   onClick?: $EventHandler
   onSuccess?: $EventHandler
