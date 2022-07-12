@@ -179,9 +179,9 @@ export interface BaseSchema<$State extends State>
 // (methods / computed / watch / events / `on[A-Z]`-style callbacks)
 export interface SchemaDitoMixin<$State extends State> {
   /**
-   * Only displays the component if the schema accessor returns `true`
+   * Only displays the component if the schema accessor returns a truthy value
    */
-  if?: OrItemAccessor<$State, {}, boolean | string[] | string>
+  if?: OrItemAccessor<$State, {}, any>
 
   /**
    * Specifies validations rules to add, remove (by setting to `undefined`) or
@@ -877,6 +877,10 @@ export type ColumnSchema<$State extends State = State> = {
    * first column to specify `defaultSort`.
    */
   defaultSort?: 'asc' | 'desc'
+  /**
+   * Only displays the column if the item accessor returns a truthy value
+   */
+  if?: ItemAccessor<$State, {}, any>
 }
 
 export type ResolvableForm<$Item = any> = Resolvable<Form<$Item>>
@@ -1149,7 +1153,7 @@ export type Form<$Item = any, $State extends State = CreateState<$Item>> = {
         paste?: (...args: any[]) => any
       }
   buttons?: Buttons<$Item>
-  if?: OrItemAccessor<$State, {}, boolean | string[] | string>
+  if?: OrItemAccessor<$State, {}, any>
 }
 
 export type Resource =
