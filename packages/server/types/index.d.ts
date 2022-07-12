@@ -255,30 +255,17 @@ export type StorageConfig =
 
 export interface AdminConfig {
   api?: ApiConfig
-  build?: {
-    /**
-     * Path to the admin's src directory. Mandatory when in development
-     * mode.
-     */
-    path: string
-    /**
-     * @default `false`
-     */
-    eslint: boolean
-  }
-  dist?: {
-    /**
-     * Path to the dist/src/admin directory. Mandatory when in production
-     * mode.
-     */
-    path: string
-  }
   /**
-   * Whether to use hot reload when in development mode.
-   *
-   * @default `true`
+   * Path to the admin's src directory. Mandatory when in development
+   * mode.
+   */
+  root?: string;
+  /**
+   * Path to the dist/src/admin directory. Mandatory when in production
+   * mode.
    */
   hotReload?: boolean
+  dist?: string;
   /**
    * @default Application.config.env or `'production'` when missing
    */
