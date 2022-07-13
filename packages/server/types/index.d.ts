@@ -399,7 +399,7 @@ export class Application<$Models extends Models> {
   })
   models: $Models
   start(): Promise<void>
-  stop(): Promise<void>
+  stop(timeout?: number): Promise<void>
   startOrExit(): Promise<void>
   addServices(services: Services): void
   addService(service: Service): void
