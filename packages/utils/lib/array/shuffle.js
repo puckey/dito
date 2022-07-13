@@ -1,0 +1,20 @@
+"use strict";
+
+exports.__esModule = true;
+exports.shuffle = shuffle;
+
+require("core-js/modules/es.array.slice.js");
+
+function shuffle(array) {
+  var res = array.slice();
+
+  for (var i = array.length; i;) {
+    var r = Math.floor(Math.random() * i);
+    var t = res[--i];
+    res[i] = res[r];
+    res[r] = t;
+  }
+
+  return res;
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9hcnJheS9zaHVmZmxlLmpzIl0sIm5hbWVzIjpbInNodWZmbGUiLCJhcnJheSIsInJlcyIsInNsaWNlIiwiaSIsImxlbmd0aCIsInIiLCJNYXRoIiwiZmxvb3IiLCJyYW5kb20iLCJ0Il0sIm1hcHBpbmdzIjoiOzs7Ozs7O0FBQU8sU0FBU0EsT0FBVCxDQUFpQkMsS0FBakIsRUFBd0I7QUFFN0IsTUFBTUMsR0FBRyxHQUFHRCxLQUFLLENBQUNFLEtBQU4sRUFBWjs7QUFDQSxPQUFLLElBQUlDLENBQUMsR0FBR0gsS0FBSyxDQUFDSSxNQUFuQixFQUEyQkQsQ0FBM0IsR0FBK0I7QUFDN0IsUUFBTUUsQ0FBQyxHQUFHQyxJQUFJLENBQUNDLEtBQUwsQ0FBV0QsSUFBSSxDQUFDRSxNQUFMLEtBQWdCTCxDQUEzQixDQUFWO0FBQ0EsUUFBTU0sQ0FBQyxHQUFHUixHQUFHLENBQUMsRUFBRUUsQ0FBSCxDQUFiO0FBQ0FGLElBQUFBLEdBQUcsQ0FBQ0UsQ0FBRCxDQUFILEdBQVNGLEdBQUcsQ0FBQ0ksQ0FBRCxDQUFaO0FBQ0FKLElBQUFBLEdBQUcsQ0FBQ0ksQ0FBRCxDQUFILEdBQVNJLENBQVQ7QUFDRDs7QUFDRCxTQUFPUixHQUFQO0FBQ0QiLCJzb3VyY2VzQ29udGVudCI6WyJleHBvcnQgZnVuY3Rpb24gc2h1ZmZsZShhcnJheSkge1xuICAvLyBEbyB0aGUgRmlzaGVyLVlhdGVzIChha2EgS251dGgpIFNodWZmbGU6XG4gIGNvbnN0IHJlcyA9IGFycmF5LnNsaWNlKClcbiAgZm9yIChsZXQgaSA9IGFycmF5Lmxlbmd0aDsgaTspIHtcbiAgICBjb25zdCByID0gTWF0aC5mbG9vcihNYXRoLnJhbmRvbSgpICogaSlcbiAgICBjb25zdCB0ID0gcmVzWy0taV1cbiAgICByZXNbaV0gPSByZXNbcl1cbiAgICByZXNbcl0gPSB0XG4gIH1cbiAgcmV0dXJuIHJlc1xufVxuIl19

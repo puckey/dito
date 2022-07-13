@@ -1,6 +1,6 @@
 <template lang="pug">
   .dito-create-button
-    template(v-if="hasMultipleForms")
+    template(v-if="showPulldown")
       button.dito-button(
         type="button"
         @mousedown.stop="onPulldownMouseDown()"
@@ -34,9 +34,9 @@
 </style>
 
 <script>
-import DitoComponent from '@/DitoComponent'
-import PulldownMixin from '@/mixins/PulldownMixin'
-import { getFormSchemas, isInlined } from '@/utils/schema'
+import DitoComponent from '../DitoComponent.js'
+import PulldownMixin from '../mixins/PulldownMixin.js'
+import { getFormSchemas, isInlined } from '../utils/schema.js'
 
 // @vue/component
 export default DitoComponent.component('dito-create-button', {
@@ -58,8 +58,8 @@ export default DitoComponent.component('dito-create-button', {
       return isInlined(this.schema)
     },
 
-    hasMultipleForms() {
-      return Object.keys(this.forms).length > 1
+    showPulldown() {
+      return Object.keys(this.forms).length > 1 || !this.forms.default
     }
   },
 
@@ -87,7 +87,7 @@ export default DitoComponent.component('dito-create-button', {
 
     onPulldownSelect(type) {
       this.createItem(this.forms[type], type)
-      this.showPulldown(false)
+      this.setPulldownOpen(false)
     }
   }
 })

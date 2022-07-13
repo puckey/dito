@@ -1,0 +1,11 @@
+"use strict";
+
+exports.__esModule = true;
+exports.hidden = void 0;
+const hidden = {
+  metaSchema: {
+    type: 'boolean'
+  }
+};
+exports.hidden = hidden;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9zY2hlbWEva2V5d29yZHMvX2hpZGRlbi5qcyJdLCJuYW1lcyI6WyJoaWRkZW4iLCJtZXRhU2NoZW1hIiwidHlwZSJdLCJtYXBwaW5ncyI6Ijs7OztBQUVPLE1BQU1BLE1BQU0sR0FBRztBQUNwQkMsRUFBQUEsVUFBVSxFQUFFO0FBQ1ZDLElBQUFBLElBQUksRUFBRTtBQURJO0FBRFEsQ0FBZiIsInNvdXJjZXNDb250ZW50IjpbIi8vIFRoaXMga2V5d29yZCBpcyB0aGVyZSBmb3IgbWV0YS1pbmZvcm1hdGlvbiBhbmQgbWlncmF0aW9uIGdlbmVyYXRpb24gb25seS5cbi8vIEl0IGRvZXNuJ3QgZG8gYW55IGFjdHVhbCB2YWxpZGF0aW9uLlxuZXhwb3J0IGNvbnN0IGhpZGRlbiA9IHtcbiAgbWV0YVNjaGVtYToge1xuICAgIHR5cGU6ICdib29sZWFuJ1xuICB9XG59XG4iXX0=

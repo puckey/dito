@@ -24,7 +24,8 @@
 </template>
 
 <style lang="sass">
-  @import 'dito.sass'
+  @import '../styles/style.sass'
+
   .dito-root
     height: 100%
     display: flex
@@ -41,12 +42,12 @@
 </style>
 
 <script>
-import DitoComponent from '@/DitoComponent'
-import DitoUser from '@/DitoUser'
-import DitoView from '@/components/DitoView'
-import DomMixin from '@/mixins/DomMixin'
-import { processView, resolveViews } from '@/utils/schema'
 import { asArray, stripTags } from '@ditojs/utils'
+import DitoComponent from '../DitoComponent.js'
+import DitoUser from '../DitoUser.js'
+import DitoView from '../components/DitoView.vue'
+import DomMixin from '../mixins/DomMixin.js'
+import { processView, resolveSchemas } from '../utils/schema.js'
 
 // @vue/component
 export default DitoComponent.component('dito-root', {
@@ -158,6 +159,10 @@ export default DitoComponent.component('dito-root', {
 
     async login() {
       this.allowLogin = true
+      const {
+        additionalComponents,
+        redirectAfterLogin
+      } = this.options.login || {}
       const loginData = await this.showDialog({
         components: {
           username: {
@@ -166,7 +171,8 @@ export default DitoComponent.component('dito-root', {
           },
           password: {
             type: 'password'
-          }
+          },
+          ...additionalComponents
         },
         buttons: {
           cancel: {},
@@ -180,8 +186,12 @@ export default DitoComponent.component('dito-root', {
             data: loginData,
             internal: true
           })
-          this.setUser(response.data.user)
-          await this.resolveViews()
+          if (redirectAfterLogin) {
+            location.replace(redirectAfterLogin)
+          } else {
+            this.setUser(response.data.user)
+            await this.resolveViews()
+          }
         } catch (err) {
           const error = err.response?.data?.error
           this.notify({
@@ -255,7 +265,7 @@ export default DitoComponent.component('dito-root', {
 
     async resolveViews() {
       try {
-        this.resolvedViews = await resolveViews(this.unresolvedViews)
+        this.resolvedViews = await resolveSchemas(this.unresolvedViews)
       } catch (error) {
         if (!error.request) {
           console.error(error)

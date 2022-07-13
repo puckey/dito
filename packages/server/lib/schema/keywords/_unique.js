@@ -1,0 +1,11 @@
+"use strict";
+
+exports.__esModule = true;
+exports.unique = void 0;
+const unique = {
+  metaSchema: {
+    type: ['boolean', 'string']
+  }
+};
+exports.unique = unique;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9zY2hlbWEva2V5d29yZHMvX3VuaXF1ZS5qcyJdLCJuYW1lcyI6WyJ1bmlxdWUiLCJtZXRhU2NoZW1hIiwidHlwZSJdLCJtYXBwaW5ncyI6Ijs7OztBQUVPLE1BQU1BLE1BQU0sR0FBRztBQUNwQkMsRUFBQUEsVUFBVSxFQUFFO0FBQ1ZDLElBQUFBLElBQUksRUFBRSxDQUFDLFNBQUQsRUFBWSxRQUFaO0FBREk7QUFEUSxDQUFmIiwic291cmNlc0NvbnRlbnQiOlsiLy8gVGhpcyBrZXl3b3JkIGlzIHRoZXJlIGZvciBtZXRhLWluZm9ybWF0aW9uIGFuZCBtaWdyYXRpb24gZ2VuZXJhdGlvbiBvbmx5LlxuLy8gSXQgZG9lc24ndCBkbyBhbnkgYWN0dWFsIHZhbGlkYXRpb24uXG5leHBvcnQgY29uc3QgdW5pcXVlID0ge1xuICBtZXRhU2NoZW1hOiB7XG4gICAgdHlwZTogWydib29sZWFuJywgJ3N0cmluZyddXG4gIH1cbn1cbiJdfQ==

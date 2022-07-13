@@ -1,0 +1,15 @@
+"use strict";
+
+var _getCommonPrefix = require("./getCommonPrefix");
+
+describe('getCommonPrefix()', function () {
+  it('should return the longest common prefix', function () {
+    expect((0, _getCommonPrefix.getCommonPrefix)('interstate', 'intersection')).toBe('inters');
+    expect((0, _getCommonPrefix.getCommonPrefix)('intersection', 'interstate')).toBe('inters');
+  });
+  it('should compare case-sensitively', function () {
+    expect((0, _getCommonPrefix.getCommonPrefix)('interstate', 'Intersection')).toBe('');
+    expect((0, _getCommonPrefix.getCommonPrefix)('InterState', 'Intersection')).toBe('Inter');
+  });
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9zdHJpbmcvZ2V0Q29tbW9uUHJlZml4LnRlc3QuanMiXSwibmFtZXMiOlsiZGVzY3JpYmUiLCJpdCIsImV4cGVjdCIsInRvQmUiXSwibWFwcGluZ3MiOiI7O0FBQUE7O0FBRUFBLFFBQVEsQ0FBQyxtQkFBRCxFQUFzQixZQUFNO0FBQ2xDQyxFQUFBQSxFQUFFLENBQUMseUNBQUQsRUFBNEMsWUFBTTtBQUNsREMsSUFBQUEsTUFBTSxDQUFDLHNDQUFnQixZQUFoQixFQUE4QixjQUE5QixDQUFELENBQU4sQ0FBc0RDLElBQXRELENBQTJELFFBQTNEO0FBQ0FELElBQUFBLE1BQU0sQ0FBQyxzQ0FBZ0IsY0FBaEIsRUFBZ0MsWUFBaEMsQ0FBRCxDQUFOLENBQXNEQyxJQUF0RCxDQUEyRCxRQUEzRDtBQUNELEdBSEMsQ0FBRjtBQUlBRixFQUFBQSxFQUFFLENBQUMsaUNBQUQsRUFBb0MsWUFBTTtBQUMxQ0MsSUFBQUEsTUFBTSxDQUFDLHNDQUFnQixZQUFoQixFQUE4QixjQUE5QixDQUFELENBQU4sQ0FBc0RDLElBQXRELENBQTJELEVBQTNEO0FBQ0FELElBQUFBLE1BQU0sQ0FBQyxzQ0FBZ0IsWUFBaEIsRUFBOEIsY0FBOUIsQ0FBRCxDQUFOLENBQXNEQyxJQUF0RCxDQUEyRCxPQUEzRDtBQUNELEdBSEMsQ0FBRjtBQUlELENBVE8sQ0FBUiIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IGdldENvbW1vblByZWZpeCB9IGZyb20gJy4vZ2V0Q29tbW9uUHJlZml4J1xuXG5kZXNjcmliZSgnZ2V0Q29tbW9uUHJlZml4KCknLCAoKSA9PiB7XG4gIGl0KCdzaG91bGQgcmV0dXJuIHRoZSBsb25nZXN0IGNvbW1vbiBwcmVmaXgnLCAoKSA9PiB7XG4gICAgZXhwZWN0KGdldENvbW1vblByZWZpeCgnaW50ZXJzdGF0ZScsICdpbnRlcnNlY3Rpb24nKSkudG9CZSgnaW50ZXJzJylcbiAgICBleHBlY3QoZ2V0Q29tbW9uUHJlZml4KCdpbnRlcnNlY3Rpb24nLCAnaW50ZXJzdGF0ZScpKS50b0JlKCdpbnRlcnMnKVxuICB9KVxuICBpdCgnc2hvdWxkIGNvbXBhcmUgY2FzZS1zZW5zaXRpdmVseScsICgpID0+IHtcbiAgICBleHBlY3QoZ2V0Q29tbW9uUHJlZml4KCdpbnRlcnN0YXRlJywgJ0ludGVyc2VjdGlvbicpKS50b0JlKCcnKVxuICAgIGV4cGVjdChnZXRDb21tb25QcmVmaXgoJ0ludGVyU3RhdGUnLCAnSW50ZXJzZWN0aW9uJykpLnRvQmUoJ0ludGVyJylcbiAgfSlcbn0pXG4iXX0=

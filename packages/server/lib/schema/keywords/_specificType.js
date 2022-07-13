@@ -1,0 +1,11 @@
+"use strict";
+
+exports.__esModule = true;
+exports.specificType = void 0;
+const specificType = {
+  metaSchema: {
+    type: 'string'
+  }
+};
+exports.specificType = specificType;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9zY2hlbWEva2V5d29yZHMvX3NwZWNpZmljVHlwZS5qcyJdLCJuYW1lcyI6WyJzcGVjaWZpY1R5cGUiLCJtZXRhU2NoZW1hIiwidHlwZSJdLCJtYXBwaW5ncyI6Ijs7OztBQUVPLE1BQU1BLFlBQVksR0FBRztBQUMxQkMsRUFBQUEsVUFBVSxFQUFFO0FBQ1ZDLElBQUFBLElBQUksRUFBRTtBQURJO0FBRGMsQ0FBckIiLCJzb3VyY2VzQ29udGVudCI6WyIvLyBUaGlzIGtleXdvcmQgaXMgdGhlcmUgZm9yIG1ldGEtaW5mb3JtYXRpb24gYW5kIG1pZ3JhdGlvbiBnZW5lcmF0aW9uIG9ubHkuXG4vLyBJdCBkb2Vzbid0IGRvIGFueSBhY3R1YWwgdmFsaWRhdGlvbi5cbmV4cG9ydCBjb25zdCBzcGVjaWZpY1R5cGUgPSB7XG4gIG1ldGFTY2hlbWE6IHtcbiAgICB0eXBlOiAnc3RyaW5nJ1xuICB9XG59XG4iXX0=

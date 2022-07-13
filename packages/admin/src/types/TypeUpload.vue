@@ -1,7 +1,7 @@
 <template lang="pug">
   .dito-upload
     table.dito-table.dito-table-separators.dito-table-background
-      // Styling comes from DitoTableHead
+      //- Styling comes from DitoTableHead
       thead.dito-table-head
         tr
           th
@@ -37,7 +37,7 @@
               | Stored
           td.dito-cell-edit-buttons
             .dito-buttons.dito-buttons-round
-              // Firefox doesn't like <button> here, so use <a> instead:
+              //- Firefox doesn't like <button> here, so use <a> instead:
               a.dito-button(
                 v-if="draggable"
                 v-bind="getButtonAttributes(verbs.drag)"
@@ -105,15 +105,15 @@
 </style>
 
 <script>
-import TypeComponent from '@/TypeComponent'
-import DitoContext from '@/DitoContext'
-import OrderedMixin from '@/mixins/OrderedMixin'
+import TypeComponent from '../TypeComponent.js'
+import DitoContext from '../DitoContext.js'
+import OrderedMixin from '../mixins/OrderedMixin.js'
 import VueUpload from 'vue-upload-component'
 import VueDraggable from 'vuedraggable'
 import parseFileSize from 'filesize-parser'
-import { getSchemaAccessor } from '@/utils/accessor'
-import { formatFileSize } from '@/utils/units'
-import { appendDataPath } from '@/utils/data'
+import { getSchemaAccessor } from '../utils/accessor.js'
+import { formatFileSize } from '../utils/units.js'
+import { appendDataPath } from '../utils/data.js'
 import { isArray, asArray, escapeHtml } from '@ditojs/utils'
 
 // @vue/component
@@ -229,10 +229,11 @@ export default TypeComponent.register('upload', {
         if (file.upload) {
           this.upload.remove(file.upload)
         }
+        this.onChange()
         this.notify({
           type: 'info',
           title: 'Successfully Removed',
-          text: `${name} was ${this.verbs.removed}.`
+          text: `${name} was ${this.verbs.deleted}.`
         })
       }
     },
@@ -282,6 +283,7 @@ export default TypeComponent.register('upload', {
       if (newFile && oldFile) {
         const { success, error } = newFile
         if (success) {
+          this.onChange()
           const file = newFile.response[0]
           if (file) {
             file.upload = newFile

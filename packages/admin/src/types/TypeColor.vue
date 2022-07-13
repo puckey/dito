@@ -35,44 +35,44 @@
 </template>
 
 <style lang="sass">
-    $color-swatch-width: $pattern-transparency-size
-    $color-swatch-radius: $border-radius - $border-width
-    .dito-color
-      .dito-input
-        display: block
-        position: relative
-        input
-          box-sizing: border-box
-          font-variant-numeric: tabular-nums
-          padding-right: $color-swatch-width
-      .dito-button-clear
-        margin-right: $color-swatch-width
-      .dito-color-picker
-        margin: $popup-margin
-        border: $border-style
-        border-radius: $border-radius
-        background: $color-white
-        box-shadow: $shadow-window
-      .dito-color-preview
-        background: $pattern-transparency
-        border-left: $border-style
-        &,
-        div
-          position: absolute
-          width: $color-swatch-width
-          top: 0
-          right: 0
-          bottom: 0
-          border-top-right-radius: $color-swatch-radius
-          border-bottom-right-radius: $color-swatch-radius
+  $color-swatch-width: $pattern-transparency-size
+  $color-swatch-radius: $border-radius - $border-width
+  .dito-color
+    .dito-input
+      display: block
+      position: relative
+      input
+        box-sizing: border-box
+        font-variant-numeric: tabular-nums
+        padding-right: $color-swatch-width
+    .dito-button-clear
+      margin-right: $color-swatch-width
+    .dito-color-picker
+      margin: $popup-margin
+      border: $border-style
+      border-radius: $border-radius
+      background: $color-white
+      box-shadow: $shadow-window
+    .dito-color-preview
+      background: $pattern-transparency
+      border-left: $border-style
+      &,
+      div
+        position: absolute
+        width: $color-swatch-width
+        top: 0
+        right: 0
+        bottom: 0
+        border-top-right-radius: $color-swatch-radius
+        border-bottom-right-radius: $color-swatch-radius
 </style>
 
 <script>
 import tinycolor from 'tinycolor2'
 import { Sketch as SketchPicker } from 'vue-color'
-import TypeComponent from '@/TypeComponent'
+import TypeComponent from '../TypeComponent.js'
 import { Trigger } from '@ditojs/ui'
-import { getSchemaAccessor } from '@/utils/accessor'
+import { getSchemaAccessor } from '../utils/accessor.js'
 
 // @vue/component
 export default TypeComponent.register('color', {
@@ -103,6 +103,7 @@ export default TypeComponent.register('color', {
         } else {
           this.value = tinycolor(value).toString(format)
         }
+        this.onChange()
       }
     },
 

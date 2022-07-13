@@ -36,8 +36,8 @@
 </style>
 
 <script>
-import TypeComponent from '@/TypeComponent'
-import DomMixin from '@/mixins/DomMixin'
+import TypeComponent from '../TypeComponent.js'
+import DomMixin from '../mixins/DomMixin.js'
 import CodeFlask from 'codeflask'
 
 // @vue/component
@@ -120,7 +120,7 @@ export default TypeComponent.register('code', {
   },
 
   methods: {
-    focus() {
+    focusElement() {
       this.$el.querySelector('textarea')?.focus()
     }
   }

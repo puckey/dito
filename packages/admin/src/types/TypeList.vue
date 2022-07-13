@@ -51,6 +51,7 @@
           template(v-if="columns")
             dito-table-cell(
               v-for="column in columns"
+              v-if="shouldRender(column)"
               :key="column.name"
               :class="getCellClass(column)"
               :cell="column"
@@ -166,14 +167,14 @@
 </style>
 
 <script>
-import TypeComponent from '@/TypeComponent'
-import DitoContext from '@/DitoContext'
-import SourceMixin from '@/mixins/SourceMixin'
-import OrderedMixin from '@/mixins/OrderedMixin'
+import TypeComponent from '../TypeComponent.js'
+import DitoContext from '../DitoContext.js'
+import SourceMixin from '../mixins/SourceMixin.js'
+import OrderedMixin from '../mixins/OrderedMixin.js'
 import VueDraggable from 'vuedraggable'
-import { getNamedSchemas, getViewEditPath } from '@/utils/schema'
-import { getFiltersPanel } from '@/utils/filter'
-import { appendDataPath } from '@/utils/data'
+import { getNamedSchemas, getViewEditPath } from '../utils/schema.js'
+import { getFiltersPanel } from '../utils/filter.js'
+import { appendDataPath } from '../utils/data.js'
 import { pickBy, equals, hyphenate } from '@ditojs/utils'
 
 // @vue/component

@@ -29,7 +29,7 @@
           :dataPath="dataPath"
           :data="data"
         )
-      dito-components.dito-components-tab(
+      dito-pane.dito-pane-tab(
         v-if="hasTabs"
         v-for="(schema, tab) in tabs"
         ref="tabs"
@@ -41,17 +41,15 @@
         :data="data"
         :meta="meta"
         :store="store"
-        :single="!inlined && !hasMainComponents"
-        :nested="nested"
+        :single="!inlined && !hasMainPane"
         :disabled="disabled"
         :generateLabels="generateLabels"
       )
       transition-height(
         :enabled="inlined"
       )
-        dito-components.dito-components-main(
-          v-if="hasMainComponents"
-          v-show="opened"
+        dito-pane.dito-pane-main(
+          v-if="hasMainPane && opened"
           ref="components"
           :schema="schema"
           :dataPath="dataPath"
@@ -59,7 +57,6 @@
           :meta="meta"
           :store="store"
           :single="!inlined && !hasTabs"
-          :nested="nested"
           :disabled="disabled"
           :generateLabels="generateLabels"
         )
@@ -72,9 +69,8 @@
         v-if="!hasLabel"
         name="edit-buttons"
       )
-    template(ve-else)
+    template(v-else-if="isPopulated")
       dito-panels(
-        v-if="isPopulated && panelSchemas.length > 0"
         :panels="panelSchemas"
         :data="data"
         :meta="meta"
@@ -106,7 +102,7 @@
     > .dito-panels
       padding: $content-padding $content-padding $content-padding 0
     // Display a ruler between tabbed components and towards the .dito-buttons
-    .dito-components-tab + .dito-components-main
+    .dito-pane-tab + .dito-pane-main
       &::before
         // Use a pseudo element to display a ruler with proper margins
         display: block
@@ -153,18 +149,18 @@
 </style>
 
 <script>
-import DitoComponent from '@/DitoComponent'
-import ItemMixin from '@/mixins/ItemMixin'
-import { appendDataPath, getParentItem } from '@/utils/data'
-import {
-  getNamedSchemas, getPanelSchemas, setDefaults, processData
-} from '@/utils/schema'
-import { getStoreAccessor } from '@/utils/accessor'
 import {
   isObject, isArray, isFunction, isRegExp,
   parseDataPath, normalizeDataPath, labelize
 } from '@ditojs/utils'
 import { TransitionHeight } from '@ditojs/ui'
+import DitoComponent from '../DitoComponent.js'
+import ItemMixin from '../mixins/ItemMixin.js'
+import { appendDataPath, getParentItem } from '../utils/data.js'
+import {
+  getNamedSchemas, getPanelSchemas, setDefaults, processData
+} from '../utils/schema.js'
+import { getStoreAccessor } from '../utils/accessor.js'
 
 // @vue/component
 export default DitoComponent.component('dito-schema', {
@@ -188,7 +184,6 @@ export default DitoComponent.component('dito-schema', {
     meta: { type: Object, default: () => ({}) },
     store: { type: Object, default: () => ({}) },
     label: { type: [String, Object], default: null },
-    nested: { type: Boolean, default: true },
     inlined: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
     collapsed: { type: Boolean, default: false },
@@ -207,8 +202,8 @@ export default DitoComponent.component('dito-schema', {
           ? data.call(this, this.context)
           : data
       ),
-      containersRegistry: {},
       componentsRegistry: {},
+      panesRegistry: {},
       panelsRegistry: {}
     }
   },
@@ -228,8 +223,8 @@ export default DitoComponent.component('dito-schema', {
 
     panelSchemas() {
       const panels = getPanelSchemas(this.schema.panels, '')
-      for (const container of Object.values(this.containersRegistry)) {
-        panels.push(...container.panelSchemas)
+      for (const pane of this.panes) {
+        panels.push(...pane.panelSchemas)
       }
       return panels
     },
@@ -344,7 +339,7 @@ export default DitoComponent.component('dito-schema', {
       return !this.inlined && !!this.tabs
     },
 
-    hasMainComponents() {
+    hasMainPane() {
       const { components } = this.schema
       return !!components && Object.keys(components).length > 0
     },
@@ -355,12 +350,24 @@ export default DitoComponent.component('dito-schema', {
       }
     }),
 
-    containersByDataPath() {
-      return this._listEntriesByDataPath(this.containersRegistry)
+    components() {
+      return Object.values(this.componentsRegistry)
+    },
+
+    panes() {
+      return Object.values(this.panesRegistry)
+    },
+
+    panels() {
+      return Object.values(this.panelsRegistry)
     },
 
     componentsByDataPath() {
       return this._listEntriesByDataPath(this.componentsRegistry)
+    },
+
+    panesByDataPath() {
+      return this._listEntriesByDataPath(this.panesRegistry)
     },
 
     panelsByDataPath() {
@@ -373,9 +380,11 @@ export default DitoComponent.component('dito-schema', {
     this.setupSchemaFields()
     // Delegate change events through to parent schema:
     this.delegate('change', this.parentSchemaComponent)
+    this.emitEvent('initialize') // Not `'create'`, since that's for data.
   },
 
   beforeDestroy() {
+    this.emitEvent('destroy')
     this._register(false)
   },
 
@@ -423,17 +432,11 @@ export default DitoComponent.component('dito-schema', {
     },
 
     someComponent(callback) {
-      return (
-        this.isPopulated &&
-        Object.values(this.componentsRegistry).some(callback)
-      )
+      return this.isPopulated && this.components.some(callback)
     },
 
     everyComponent(callback) {
-      return (
-        this.isPopulated &&
-        Object.values(this.componentsRegistry).every(callback)
-      )
+      return this.isPopulated && this.components.every(callback)
     },
 
     onExpand(expand) {
@@ -441,11 +444,16 @@ export default DitoComponent.component('dito-schema', {
         // TODO: Actually expose this on DitoContext?
         context: { expand }
       })
-      this.opened = expand
-    },
+      // Prevent closing the schema with invalid data, since the in-component
+      // validation will not be executed once it's closed.
 
-    onLoad() {
-      this.emitEvent('load')
+      // TODO: Move validation out of components, to schema, just like
+      // processing, and use `showValidationErrors()` for the resulting errors,
+      // then remove this requirement, since we can validate closed forms and
+      // schemas then.
+      if (!this.opened || expand || this.validateAll()) {
+        this.opened = expand
+      }
     },
 
     onChange() {
@@ -453,13 +461,13 @@ export default DitoComponent.component('dito-schema', {
     },
 
     resetValidation() {
-      for (const component of Object.values(this.componentsRegistry)) {
+      for (const component of this.components) {
         component.resetValidation()
       }
     },
 
     clearErrors() {
-      for (const component of Object.values(this.componentsRegistry)) {
+      for (const component of this.components) {
         component.clearErrors()
       }
     },
@@ -513,7 +521,7 @@ export default DitoComponent.component('dito-schema', {
       return this.validateAll(match, false)
     },
 
-    showValidationErrors(errors, focus) {
+    async showValidationErrors(errors, focus) {
       this.clearErrors()
       let first = true
       const unmatched = []
@@ -532,7 +540,7 @@ export default DitoComponent.component('dito-schema', {
         for (const component of components) {
           if (component.showValidationErrors(errs, first && focus)) {
             found = true
-            break
+            first = false
           }
         }
         if (!found) {
@@ -543,22 +551,21 @@ export default DitoComponent.component('dito-schema', {
           while (dataPathParts.length > 0) {
             const components = this.getComponentsByDataPath(dataPathParts)
             for (const component of components) {
-              if (component.navigateToComponent?.(
+              if (await component.navigateToComponent?.(
                 fullDataPath,
-                subComponent => {
-                  // Filter the errors to only contain those that belong to the
-                  // matched dataPath:
-                  const parentPath = normalizeDataPath(dataPathParts)
-                  const filteredErrors = Object.entries(errors).reduce(
-                    (filtered, [dataPath, errs]) => {
-                      if (normalizeDataPath(dataPath).startsWith(parentPath)) {
-                        filtered[dataPath] = errs
-                      }
-                      return filtered
-                    },
-                    {}
-                  )
-                  subComponent.showValidationErrors(filteredErrors, true)
+                subComponents => {
+                  let found = false
+                  for (const component of subComponents) {
+                    const errs = errors[component.dataPath]
+                    if (
+                      errs &&
+                      component.showValidationErrors(errs, first && focus)
+                    ) {
+                      found = true
+                      first = false
+                    }
+                  }
+                  return found
                 }
               )) {
                 // Found a nested form to display at least parts fo the errors.
@@ -653,14 +660,14 @@ export default DitoComponent.component('dito-schema', {
       this.$schemaParentComponent()?._registerSchemaComponent(this, add)
     },
 
-    _registerContainer(container, add) {
-      this._registerEntry(this.containersRegistry, container, add)
-    },
-
     _registerComponent(component, add) {
       this._registerEntry(this.componentsRegistry, component, add)
       // Only register with the parent if schema shares data with it.
       this.parentSchemaComponent?._registerComponent(component, add)
+    },
+
+    _registerPane(pane, add) {
+      this._registerEntry(this.panesRegistry, pane, add)
     },
 
     _registerPanel(panel, add) {

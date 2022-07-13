@@ -1,37 +1,59 @@
 import { isString, isObject, asArray, clone } from '@ditojs/utils'
 
 export default class ControllerAction {
-  constructor(controller, handler, type, name, verb, path, authorize) {
+  constructor(
+    controller, actions, handler, type, name, _method, _path, _authorize
+  ) {
+    const {
+      core = false,
+      // Allow decorators on actions to override the predetermined defaults for
+      // `method`, `path` and `authorize`:
+      // TODO: `handler.method` and `handler.path` were deprecated in March
+      // 2022, remove later and only set the valued passed to constructor then.
+      method = _method,
+      path = _path,
+      scope,
+      authorize,
+      transacted,
+      parameters,
+      returns,
+      options = {},
+      ...additional
+    } = handler
+
     this.controller = controller
+    this.actions = actions
     this.handler = handler
     this.type = type
     this.name = name
     this.identifier = `${type}:${name}`
-    // Allow decorators on actions to override the predetermined defaults for
-    // `verb`, `path` and `authorize`:
-    this.verb = handler.verb || verb
-    // Use ?? instead of || to allow '' to override the path.
-    this.path = handler.path ?? path
-    this.authorize = handler.authorize || authorize
+    this.method = method
+    this.path = path
+    this.scope = scope
+    this.authorize = authorize || _authorize
     this.transacted = !!(
-      handler.transacted ||
-      controller.transacted ||
-      // Core graph and assets operations are always transacted, unless the verb
-      // is 'get':
-      handler.core && verb !== 'get' && (controller.graph || controller.assets)
+      transacted ||
+      controller.transacted || (
+        // Core graph and assets operations are always transacted, unless the
+        // method is 'get':
+        core && method !== 'get' && (
+          controller.graph ||
+          controller.assets
+        )
+      )
     )
     this.authorization = controller.processAuthorize(this.authorize)
     this.app = controller.app
-    this.paramsName = ['post', 'put', 'patch'].includes(this.verb)
+    this.paramsName = ['post', 'put', 'patch'].includes(this.method)
       ? 'body'
       : 'query'
-    const { parameters, returns, options = {} } = this.handler
     this.parameters = this.app.compileParametersValidator(parameters, {
       async: true,
-      ...options.parameters, // See @parameters() decorator
+      ...options.parameters,
       dataName: this.paramsName
     })
     this.returns = this.app.compileParametersValidator(
+      // TODO: Shouldn't we set `this.returns` to null instead?
       returns ? [returns] : [],
       {
         async: true,
@@ -43,12 +65,15 @@ export default class ControllerAction {
         dataName: 'returns'
       }
     )
+    // Copy over the additional properties, e.g. `cached` so application
+    // middleware can implement caching mechanisms:
+    Object.assign(this, additional)
   }
 
   // Possible values for `from` are:
   // - 'path': Use `ctx.params` which is mapped to the route / path
-  // - 'query': Use `ctx.request.query`, regardless of the action's verb.
-  // - 'body': Use `ctx.request.body`, regardless of the action's verb.
+  // - 'query': Use `ctx.request.query`, regardless of the action's method.
+  // - 'body': Use `ctx.request.body`, regardless of the action's method.
   getParams(ctx, from = this.paramsName) {
     const value = from === 'path' ? ctx.params : ctx.request[from]
     // koa-bodyparser always sets an object, even when there is no body.
@@ -74,7 +99,7 @@ export default class ControllerAction {
   }
 
   async callHandler(ctx, ...args) {
-    return this.handler.call(this.controller, ctx, ...args)
+    return this.handler.call(this.actions, ctx, ...args)
   }
 
   createValidationError(options) {
@@ -165,8 +190,9 @@ export default class ControllerAction {
     if (errors.length > 0) {
       throw this.createValidationError({
         type: 'ParameterValidation',
-        message: `The provided data is not valid: ${JSON.stringify(getData())}`,
-        errors
+        message: 'The provided action parameters are not valid',
+        errors,
+        json: getData()
       })
     }
   }
@@ -189,8 +215,9 @@ export default class ControllerAction {
       } catch (error) {
         throw this.createValidationError({
           type: 'ResultValidation',
-          message: `Invalid result of action: ${JSON.stringify(getResult())}`,
-          errors: error.errors
+          message: 'The returned action result is not valid',
+          errors: error.errors,
+          json: getResult()
         })
       }
     }
@@ -229,7 +256,7 @@ export default class ControllerAction {
 
   coerceValue(type, value, modelOptions) {
     // See if param needs additional coercion:
-    if (['date', 'datetime', 'timestamp'].includes(type)) {
+    if (value && ['date', 'datetime', 'timestamp'].includes(type)) {
       value = new Date(value)
     } else {
       // See if the defined type(s) require coercion to objects:
@@ -245,7 +272,7 @@ export default class ControllerAction {
             //   `JSON.parse()`)
             // - `key1:X,key2:Y` (a simple parser is applied, splitting into
             //   entries and key/value pairs, valuse are parsed with
-            //   JSON.parse(), falling back to string.
+            //   `JSON.parse()`, falling back to string.
             if (/"/.test(value)) {
               // Just add the curly braces and parse as JSON
               value = JSON.parse(`{${value}}`)

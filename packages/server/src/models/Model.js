@@ -1,18 +1,26 @@
 import objection from 'objection'
-import { QueryBuilder } from '@/query'
-import { EventEmitter, KnexHelper } from '@/lib'
-import { convertSchema, addRelationSchemas, convertRelations } from '@/schema'
-import { populateGraph, filterGraph } from '@/graph'
-import {
-  ResponseError, DatabaseError, GraphError, ModelError, NotFoundError,
-  RelationError, WrappedError
-} from '@/errors'
 import {
   isString, isObject, isArray, isFunction, isPromise, asArray, merge, flatten,
   parseDataPath, normalizeDataPath, getValueAtDataPath
 } from '@ditojs/utils'
-import RelationAccessor from './RelationAccessor'
-import definitions from './definitions'
+import { QueryBuilder } from '../query/index.js'
+import { EventEmitter, KnexHelper } from '../lib/index.js'
+import {
+  convertSchema,
+  addRelationSchemas,
+  convertRelations
+} from '../schema/index.js'
+import { populateGraph, filterGraph } from '../graph/index.js'
+import { formatJson } from '../utils/index.js'
+import {
+  ResponseError,
+  GraphError, ModelError,
+  NotFoundError,
+  RelationError,
+  WrappedError
+} from '../errors/index.js'
+import RelationAccessor from './RelationAccessor.js'
+import definitions from './definitions/index.js'
 
 export class Model extends objection.Model {
   // Define a default constructor to allow new Model(json) as a short-cut to
@@ -222,7 +230,7 @@ export class Model extends objection.Model {
     return super.query(trx).onError(err => {
       // TODO: Shouldn't this wrapping happen on the Controller level?
       err = err instanceof ResponseError ? err
-        : err instanceof objection.DBError ? new DatabaseError(err)
+        : err instanceof objection.DBError ? this.app.createDatabaseError(err)
         : new WrappedError(err)
       return Promise.reject(err)
     })
@@ -279,9 +287,9 @@ export class Model extends objection.Model {
         throw new ModelError(
           this,
           `Invalid amount of id values provided for reference: Unable to map ${
-            JSON.stringify(modelOrId)
+            formatJson(modelOrId, false)
           } to ${
-            JSON.stringify(idProperties)
+            formatJson(idProperties, false)
           }.`
         )
       }
@@ -352,13 +360,15 @@ export class Model extends objection.Model {
 
   static get jsonSchema() {
     return this._getCached('jsonSchema', () => {
-      const schema = convertSchema(this.definition.properties)
+      const schema = convertSchema({
+        type: 'object',
+        properties: this.definition.properties
+      })
       addRelationSchemas(this, schema.properties)
       // Merge in root-level schema additions
       merge(schema, this.definition.schema)
       return {
         $id: this.name,
-        $schema: 'http://json-schema.org/draft-07/schema',
         ...schema
       }
     }, {})
@@ -729,10 +739,11 @@ export class Model extends objection.Model {
     case 'ModelValidation':
       return this.app.createValidationError({
         type,
-        message: message ||
-          `The provided data for the ${this.name} model is not valid: ${JSON.stringify(json)}`,
+        message:
+          message || `The provided data for the ${this.name} model is not valid`,
         errors,
-        options
+        options,
+        json
       })
     case 'RelationExpression':
     case 'UnallowedRelation':
@@ -920,20 +931,15 @@ export class Model extends objection.Model {
         )
         : assetDataPaths
 
-      // `dataPaths` will be empty in the case of an update/insert that do not
+      // `dataPaths` is empty in the case of an update/insert that does not
       // affect the assets.
-      if (dataPaths.length === 0) {
-        return
-      }
+      if (dataPaths.length === 0) return
 
       // Load the model's asset files in their current state before the query is
       // executed.
       const beforeItems = type === 'before:insert'
         ? []
-        : await loadAssetDataPaths(
-          asFindQuery().clear('runAfter'),
-          dataPaths
-        )
+        : await loadAssetDataPaths(asFindQuery(), dataPaths)
       const beforeFilesPerDataPath = getFilesPerAssetDataPath(
         beforeItems,
         dataPaths
@@ -966,7 +972,7 @@ export class Model extends objection.Model {
           if (modifiedFiles.length > 0) {
             // TODO: `modifiedFiles` should be restored as well, but that's far
             // from trivial since no backup is kept in `handleModifiedAssets`
-            console.info(
+            console.warn(
               `Unable to restore these already modified files: ${
                 modifiedFiles.map(file => `'${file.name}'`)
               }`

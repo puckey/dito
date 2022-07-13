@@ -1,17 +1,13 @@
-import DitoContext from '@/DitoContext'
-import ValidationMixin from './ValidationMixin'
-import { getSchemaAccessor } from '@/utils/accessor'
-import { computeValue } from '@/utils/schema'
-import { getItem, getParentItem } from '@/utils/data'
+import DitoContext from '../DitoContext.js'
+import ValidationMixin from './ValidationMixin.js'
+import { getSchemaAccessor } from '../utils/accessor.js'
+import { computeValue } from '../utils/schema.js'
+import { getItem, getParentItem } from '../utils/data.js'
 import { isString, asArray } from '@ditojs/utils'
 
 // @vue/component
 export default {
   mixins: [ValidationMixin],
-
-  inject: [
-    'tabComponent'
-  ],
 
   props: {
     schema: { type: Object, required: true },
@@ -44,6 +40,10 @@ export default {
 
     component() {
       return this.resolveTypeComponent(this.schema.component)
+    },
+
+    context() {
+      return new DitoContext(this, { nested: this.nested })
     },
 
     value: {
@@ -182,12 +182,16 @@ export default {
     },
 
     listeners() {
-      return {
-        focus: this.onFocus,
-        blur: this.onBlur,
-        input: this.onInput,
-        change: this.onChange
+      const listeners = this.getListeners()
+      const { events = {} } = this.schema
+      if (events) {
+        // Register callbacks for all provides non-recognized events,
+        // assuming they are native events.
+        for (const event of Object.keys(events)) {
+          listeners[event] ||= () => this.emitEvent(event)
+        }
       }
+      return listeners
     },
 
     validations() {
@@ -237,25 +241,40 @@ export default {
     },
 
     // @overridable
+    getListeners() {
+      return {
+        focus: this.onFocus,
+        blur: this.onBlur,
+        input: this.onInput,
+        change: this.onChange
+      }
+    },
+
+    // @overridable
     getValidations() {
       return null
+    },
+
+    // @overridable
+    focusElement() {
+      const [element] = asArray(this.$refs.element)
+      if (element) {
+        this.$nextTick(() => {
+          element.focus()
+          // If the element is disabled, `focus()` will likely not have the
+          // desired effect. Use `scrollIntoView()` if available:
+          if (this.disabled) {
+            (element.$el || element).scrollIntoView?.()
+          }
+        })
+      }
     },
 
     focus() {
       // Also focus this component's schema and panel in case it's a tab.
       this.schemaComponent.focus()
       this.tabComponent?.focus()
-      const [focus] = asArray(this.$refs.element)
-      if (focus) {
-        this.$nextTick(() => {
-          focus.focus()
-          // If the element is disabled, `focus()` will likely not have the
-          // desired effect. Use `scrollIntoView()` if available:
-          if (this.disabled) {
-            (focus.$el || focus).scrollIntoView?.()
-          }
-        })
-      }
+      this.focusElement()
     },
 
     clear() {

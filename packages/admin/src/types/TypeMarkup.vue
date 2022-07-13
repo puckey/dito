@@ -115,9 +115,9 @@
 </style>
 
 <script>
-import TypeComponent from '@/TypeComponent'
-import DomMixin from '@/mixins/DomMixin'
-import { getSchemaAccessor } from '@/utils/accessor'
+import TypeComponent from '../TypeComponent.js'
+import DomMixin from '../mixins/DomMixin.js'
+import { getSchemaAccessor } from '../utils/accessor.js'
 import { Editor, EditorContent, EditorMenuBar, Mark } from 'tiptap'
 import { toggleMark } from 'tiptap-commands'
 import {
@@ -491,7 +491,7 @@ export default TypeComponent.register('markup', {
       return list
     },
 
-    focus() {
+    focusElement() {
       this.$el.scrollIntoView?.()
       this.editor.focus()
     }

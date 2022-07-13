@@ -1,0 +1,19 @@
+"use strict";
+
+exports.__esModule = true;
+exports.AuthenticationError = void 0;
+
+var _ResponseError = require("./ResponseError");
+
+class AuthenticationError extends _ResponseError.ResponseError {
+  constructor(error) {
+    super(error, {
+      message: 'Authentication error',
+      status: 401
+    });
+  }
+
+}
+
+exports.AuthenticationError = AuthenticationError;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9lcnJvcnMvQXV0aGVudGljYXRpb25FcnJvci5qcyJdLCJuYW1lcyI6WyJBdXRoZW50aWNhdGlvbkVycm9yIiwiUmVzcG9uc2VFcnJvciIsImNvbnN0cnVjdG9yIiwiZXJyb3IiLCJtZXNzYWdlIiwic3RhdHVzIl0sIm1hcHBpbmdzIjoiOzs7OztBQUFBOztBQUVPLE1BQU1BLG1CQUFOLFNBQWtDQyw0QkFBbEMsQ0FBZ0Q7QUFDckRDLEVBQUFBLFdBQVcsQ0FBQ0MsS0FBRCxFQUFRO0FBQ2pCLFVBQU1BLEtBQU4sRUFBYTtBQUFFQyxNQUFBQSxPQUFPLEVBQUUsc0JBQVg7QUFBbUNDLE1BQUFBLE1BQU0sRUFBRTtBQUEzQyxLQUFiO0FBQ0Q7O0FBSG9EIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgUmVzcG9uc2VFcnJvciB9IGZyb20gJy4vUmVzcG9uc2VFcnJvcidcblxuZXhwb3J0IGNsYXNzIEF1dGhlbnRpY2F0aW9uRXJyb3IgZXh0ZW5kcyBSZXNwb25zZUVycm9yIHtcbiAgY29uc3RydWN0b3IoZXJyb3IpIHtcbiAgICBzdXBlcihlcnJvciwgeyBtZXNzYWdlOiAnQXV0aGVudGljYXRpb24gZXJyb3InLCBzdGF0dXM6IDQwMSB9KVxuICB9XG59XG4iXX0=

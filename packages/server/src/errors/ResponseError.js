@@ -21,14 +21,7 @@ export class ResponseError extends Error {
           ? { message: error }
           : error || {}
     const { status, ...data } = { ...defaults, ...object }
-    let { message, code } = data
-    if (process.env.NODE_ENV === 'test' && error === object) {
-      // Include full JSON error in message during tests, for better reporting.
-      const { message: _, ...rest } = data
-      if (Object.keys(rest).length > 0) {
-        message = `${message}\nError Data:\n${JSON.stringify(rest, null, 2)}`
-      }
-    }
+    const { message, code } = data
     super(message)
     this.name = this.constructor.name
     this.status = status

@@ -1,14 +1,14 @@
-import DitoComponent from '@/DitoComponent'
-import ResourceMixin from './ResourceMixin'
-import SchemaParentMixin from '@/mixins/SchemaParentMixin'
-import { getSchemaAccessor, getStoreAccessor } from '@/utils/accessor'
-import { getMemberResource } from '@/utils/resource'
+import DitoComponent from '../DitoComponent.js'
+import ResourceMixin from './ResourceMixin.js'
+import SchemaParentMixin from '../mixins/SchemaParentMixin.js'
+import { getSchemaAccessor, getStoreAccessor } from '../utils/accessor.js'
+import { getMemberResource } from '../utils/resource.js'
 import {
   processRouteSchema, processForms, getNamedSchemas, getButtonSchemas,
   hasFormSchema, getFormSchemas, getViewSchema,
   hasLabels, isCompact, isInlined,
   isObjectSource, isListSource
-} from '@/utils/schema'
+} from '../utils/schema.js'
 import {
   isObject, isString, isArray, isNumber, equals,
   parseDataPath, normalizeDataPath
@@ -362,7 +362,6 @@ export default {
         // including the nested list data.
         this.viewComponent.setData(data)
       }
-      this.schemaComponent.onLoad()
     },
 
     unwrapListData(data) {
@@ -445,54 +444,87 @@ export default {
       }
     },
 
-    openSchemaComponent(index) {
+    getSchemaComponent(index) {
       const { schemaComponents } = this
       const { length } = schemaComponents
-      const idx = ((index % length) + length) % length
-      const schemaComponent = schemaComponents[idx]
+      return schemaComponents[((index % length) + length) % length]
+    },
+
+    openSchemaComponent(index) {
+      const schemaComponent = this.getSchemaComponent(index)
       if (schemaComponent) {
         schemaComponent.opened = true
       }
     },
 
-    navigateToComponent(dataPath, onComplete) {
-      const callOnComplete = () => {
-        if (onComplete) {
+    async navigateToComponent(dataPath, onComplete) {
+      if (this.collapsible) {
+        const index = dataPath.startsWith(this.dataPath)
+          ? this.isListSource
+            ? parseDataPath(dataPath.slice(this.dataPath.length + 1))[0] ?? null
+            : 0
+          : null
+        if (index !== null && isNumber(+index)) {
+          const schemaComponent = this.getSchemaComponent(+index)
+          if (schemaComponent) {
+            const { opened } = schemaComponent
+            if (!opened) {
+              schemaComponent.opened = true
+              await this.$nextTick()
+            }
+            const components = schemaComponent.getComponentsByDataPath(dataPath)
+            if (components.length > 0 && (onComplete?.(components) ?? true)) {
+              return true
+            } else {
+              schemaComponent.opened = opened
+            }
+          }
+        }
+      }
+      return this.navigateToRouteComponent(dataPath, onComplete)
+    },
+
+    navigateToRouteComponent(dataPath, onComplete) {
+      return new Promise((resolve, reject) => {
+        const callOnComplete = () => {
           // Retrieve the last route component, which will be the component that
           // we just navigated to, and pass it on to `onComplete()`
           const { routeComponents } = this.appState
-          onComplete(routeComponents[routeComponents.length - 1])
+          const routeComponent = routeComponents[routeComponents.length - 1]
+          resolve(onComplete?.([routeComponent]) ?? true)
         }
-      }
 
-      const dataPathParts = parseDataPath(dataPath)
-      // See if we can find a route that can serve part of the given dataPath,
-      // and take it from there:
-      while (dataPathParts.length > 0) {
-        const path = this.routeComponent.getChildPath(
-          this.api.normalizePath(normalizeDataPath(dataPathParts))
-        )
-        // See if there actually is a route for this sub-component:
-        const { matched } = this.$router.match(path)
-        if (matched.length) {
-          if (this.$route.path === path) {
+        const dataPathParts = parseDataPath(dataPath)
+        // See if we can find a route that can serve part of the given dataPath,
+        // and take it from there:
+        while (dataPathParts.length > 0) {
+          const path = this.routeComponent.getChildPath(
+            this.api.normalizePath(normalizeDataPath(dataPathParts))
+          )
+          // See if there actually is a route for this sub-component:
+          const { matched } = this.$router.match(path)
+          if (matched.length) {
+            if (this.$route.path === path) {
             // We're already there, so just call `onComplete()`:
-            callOnComplete()
-          } else {
+              callOnComplete()
+            } else {
             // Navigate to the component's path, then call `onComplete()`_:
-            this.$router.push(
-              { path },
-              // Wait for the last route component to be mounted in the next
-              // tick before calling `onComplete()`
-              () => this.$nextTick(callOnComplete)
-            )
+              this.$router.push(
+                { path },
+                // Wait for the last route component to be mounted in the next
+                // tick before calling `onComplete()`
+                () => {
+                  this.$nextTick(callOnComplete)
+                },
+                reject
+              )
+            }
           }
-          return true
+          // Keep removing the last part until we find a match.
+          dataPathParts.pop()
         }
-        // Keep removing the last part until we find a match.
-        dataPathParts.pop()
-      }
-      return false
+        resolve(false)
+      })
     }
   }, // end of `methods`
 

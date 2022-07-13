@@ -1,10 +1,10 @@
 import Vue from 'vue'
-import DitoContext from '@/DitoContext'
-import { getUid } from './uid'
-import { SchemaGraph } from './SchemaGraph'
-import { appendDataPath, isTemporaryId } from './data'
+import DitoContext from '../DitoContext.js'
+import { getUid } from './uid.js'
+import { SchemaGraph } from './SchemaGraph.js'
+import { appendDataPath, isTemporaryId } from './data.js'
 import {
-  isObject, isString, isArray, isFunction, isPromise, clone, camelize
+  isObject, isString, isArray, isFunction, isPromise, clone, camelize, isModule
 } from '@ditojs/utils'
 
 const typeComponents = {}
@@ -71,20 +71,70 @@ export function everySchemaComponent(schema, callback) {
   ) !== false
 }
 
-export async function resolveViews(unresolvedViews) {
-  let views = isFunction(unresolvedViews)
-    ? unresolvedViews()
-    : unresolvedViews
-  if (isPromise(views)) {
-    views = await views
+export async function resolveSchema(schema, unwrapModule = false) {
+  if (isFunction(schema)) {
+    schema = schema()
   }
-  // Copy views to convert from module to object, and keep  a global reference:
-  return { ...views }
+  if (isPromise(schema)) {
+    schema = await schema
+  }
+  if (isModule(schema)) {
+    // Copy to convert from module to object:
+    schema = { ...schema }
+    // Unwrap default or named schema
+    if (!schema.name && (unwrapModule || schema.default)) {
+      const keys = Object.keys(schema)
+      if (keys.length === 1) {
+        const name = keys[0]
+        schema = schema[name]
+        if (name !== 'default') {
+          schema.name = name
+        }
+      }
+    }
+  }
+  return schema
+}
+
+export async function resolveSchemas(
+  unresolvedSchemas,
+  resolveItem = resolveSchema
+) {
+  let schemas = isFunction(unresolvedSchemas)
+    ? unresolvedSchemas()
+    : unresolvedSchemas
+  schemas = await resolveSchema(schemas, false)
+  if (isArray(schemas)) {
+    // Translate an array of dynamic import, each importing one named schema
+    // module to an object with named entries.
+    schemas = Object.fromEntries(await Promise.all(schemas.map(
+      async item => {
+        const schema = await resolveItem(item, true)
+        return [schema.name, schema]
+      }
+    )))
+  } else if (isObject(schemas)) {
+    schemas = Object.fromEntries(await Promise.all(Object.entries(schemas).map(
+      async ([key, item]) => {
+        const schema = await resolveItem(item, true)
+        return [key, schema]
+      }
+    )))
+  }
+  return schemas
+}
+
+export async function resolvePanels(schema) {
+  const { panels } = schema
+  if (schema.panels) {
+    schema.panels = await resolveSchemas(panels)
+  }
 }
 
 export async function processView(component, api, schema, name, routes) {
   const children = []
   processRouteSchema(api, schema, name)
+  await resolvePanels(schema)
   if (isSingleComponentView(schema)) {
     await processComponent(api, schema, name, children, 0)
   } else {
@@ -128,7 +178,7 @@ export async function processForms(api, schema, level) {
   // First resolve the forms and store the results back on the schema.
   let { form, forms, components } = schema
   if (forms) {
-    forms = schema.forms = await resolveForms(forms)
+    forms = schema.forms = await resolveSchemas(forms, resolveForm)
   } else if (form) {
     form = schema.form = await resolveForm(form)
   } else if (components) {
@@ -147,34 +197,11 @@ export async function processForms(api, schema, level) {
 }
 
 export async function resolveForm(form) {
-  if (isFunction(form)) {
-    form = form()
-  }
-  if (isPromise(form)) {
-    form = await form
-  }
-  // When dynamically importing forms, the actual form can be received named or
-  // as `default` in a nested object, detect and handle this case:
-  if (form && !('components' in form)) {
-    // Assume the form is the first export (named or default)
-    const name = Object.keys(form)[0]
-    form = form[name]
-    if (form && name !== 'default') {
-      form.name = name
-    }
+  form = await resolveSchema(form, true)
+  if (form) {
+    await resolvePanels(form)
   }
   return form
-}
-
-export async function resolveForms(forms) {
-  const results = await Promise.all(Object.values(forms).map(resolveForm))
-  return Object.keys(forms).reduce(
-    (mapped, key, index) => {
-      mapped[key] = results[index]
-      return mapped
-    },
-    {}
-  )
 }
 
 export function isSingleComponentView(schema) {
@@ -388,7 +415,7 @@ function cloneItem(sourceSchema, item, options) {
 
 export function processData(schema, sourceSchema, data, dataPath, {
   component,
-  schemaOnly, // wether to only include data covered by the schema, or all data
+  schemaOnly, // whether to only include data covered by the schema, or all data
   target
 } = {}) {
   const options = { component, schemaOnly, target, rootData: data }
@@ -653,7 +680,7 @@ export function getSourceType(schemaOrType) {
   ) ?? null
 }
 
-export function getPanelSchema(schema, dataPath) {
+export function getPanelSchema(schema, dataPath, tabComponent) {
   return schema
     ? {
       schema,
@@ -661,15 +688,20 @@ export function getPanelSchema(schema, dataPath) {
       // This is used e.g. for $filters panels.
       dataPath: schema.name
         ? appendDataPath(dataPath, schema.name)
-        : dataPath
+        : dataPath,
+      tabComponent
     }
     : null
 }
 
-export function getPanelSchemas(schemas, dataPath, panels = []) {
+export function getPanelSchemas(schemas, dataPath, tabComponent, panels = []) {
   if (schemas) {
     for (const [key, schema] of Object.entries(schemas)) {
-      const panel = getPanelSchema(schema, appendDataPath(dataPath, key))
+      const panel = getPanelSchema(
+        schema,
+        appendDataPath(dataPath, key),
+        tabComponent
+      )
       if (panel) {
         panels.push(panel)
       }
@@ -678,16 +710,21 @@ export function getPanelSchemas(schemas, dataPath, panels = []) {
   return panels
 }
 
-export function getAllPanelSchemas(schema, dataPath, schemaComponent = null) {
+export function getAllPanelSchemas(
+  schema,
+  dataPath,
+  schemaComponent = null,
+  tabComponent = null
+) {
   const panel = getTypeOptions(schema)?.getPanelSchema?.(
     schema,
     dataPath,
     schemaComponent
   )
-  const panels = panel ? [getPanelSchema(panel, dataPath)] : []
+  const panels = panel ? [getPanelSchema(panel, dataPath, tabComponent)] : []
   // Allow each component to provide its own set of panels, in
   // addition to the default one (e.g. $filter):
-  getPanelSchemas(schema.panels, dataPath, panels)
+  getPanelSchemas(schema.panels, dataPath, tabComponent, panels)
   return panels
 }
 

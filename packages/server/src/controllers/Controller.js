@@ -1,11 +1,14 @@
-import chalk from 'chalk'
-import { getOwnProperty, getAllKeys, describeFunction } from '@/utils'
-import { EventEmitter } from '@/lib'
-import ControllerAction from './ControllerAction'
-import MemberAction from './MemberAction'
+import pico from 'picocolors'
+import { EventEmitter } from '../lib/index.js'
+import ControllerAction from './ControllerAction.js'
+import MemberAction from './MemberAction.js'
 import {
   ResponseError, WrappedError, ControllerError, AuthorizationError
-} from '@/errors'
+} from '../errors/index.js'
+import {
+  getOwnProperty, getOwnKeys, getAllKeys, processHandlerParameters,
+  describeFunction, formatJson, deprecate
+} from '../utils/index.js'
 import {
   isObject, isString, isArray, isBoolean, isFunction, asArray, equals,
   parseDataPath, normalizeDataPath
@@ -21,6 +24,12 @@ export class Controller {
 
   // @overridable
   initialize() {
+  }
+
+  // @return {Application|Function} [app or function]
+  compose() {
+    // To be overridden in sub-classes, if the controller needs to install
+    // middleware. For normal routes, use `this.app.addRoute()` instead.
   }
 
   setup(isRoot = true, setupActionsObject = true) {
@@ -44,11 +53,11 @@ export class Controller {
       this.url = namespace ? `/${namespace}${url}` : url
       this.log(
         `${
-          namespace ? chalk.green(`/${namespace}/`) : ''
+          namespace ? pico.green(`/${namespace}/`) : ''
         }${
-          chalk.cyan(path)
+          pico.cyan(path)
         }${
-          chalk.white(':')
+          pico.white(':')
         }`,
         this.level
       )
@@ -73,10 +82,10 @@ export class Controller {
 
     const addAction = key => {
       const value = this[key]
-      // NOTE: Only add instance methods that have a @action() decorator,
-      // which in turn sets the `verb` property on the method, or action objects
-      // which have the `handler` property:
-      if (value?.verb || value?.handler) {
+      // NOTE: Only add instance methods that have a @action() decorator, which
+      // in turn sets the `method` property on the method, as well as action
+      // objects which provide the `method` property:
+      if (value?.method) {
         controller[key] = value
       }
     }
@@ -89,20 +98,20 @@ export class Controller {
     return controller
   }
 
-  setupRoute(verb, url, transacted, authorize, action, handlers) {
+  setupRoute(method, url, transacted, authorize, action, middlewares) {
     this.log(
       `${
-        chalk.magenta(verb.toUpperCase())
+        pico.magenta(method.toUpperCase())
       } ${
-        chalk.green(this.url)
+        pico.green(this.url)
       }${
-        chalk.cyan(url.slice(this.url.length))
+        pico.cyan(url.slice(this.url.length))
       } ${
-        chalk.white(this.describeAuthorize(authorize))
+        pico.white(this.describeAuthorize(authorize))
       }`,
       this.level + 1
     )
-    this.app.addRoute(verb, url, transacted, handlers, this, action)
+    this.app.addRoute(method, url, transacted, middlewares, this, action)
   }
 
   setupActions(type) {
@@ -110,26 +119,34 @@ export class Controller {
       values: actions,
       authorize
     } = this.processValues(this.inheritValues(type))
-    for (const [name, handler] of Object.entries(actions)) {
-      this.setupAction(type, actions, name, handler, authorize[name])
+    for (const [name, action] of Object.entries(actions)) {
+      // Replace the action object with the converted action handler, so they
+      // too can benefit from prototypal inheritance:
+      actions[name] = this.setupAction(
+        type, actions, name, action, authorize[name]
+      )
     }
+    // Expose a direct reference to the controller on the action object, but
+    // also make it inherit from the controller so that all its public fields
+    // and functions (`app`, `query()`, `execute()`, etc.) can be accessed
+    // directly through `this` from actions.
+    // NOTE: Inheritance is also set up by `inheritValues()` so that from inside
+    // the handlers, `super` points to the parent controller's actions object,
+    // so that calling `super.patch()` from a patch handler magically works.
+    actions.controller = this
+    Object.setPrototypeOf(actions, this)
     return actions
   }
 
-  setupAction(
-    type,
-    actions,
-    name,
-    handler,
-    authorize,
-    // These values are only changed when called from
-    // `CollectionController.setupAction()`:
-    verb = 'get',
-    // The default path for actions is the normalized name.
-    path = this.app.normalizePath(name)
-  ) {
-    if (!isFunction(handler)) {
-      handler = setupHandlerFromObject(handler, actions)
+  setupAction(type, actions, name, action, authorize) {
+    const handler = isFunction(action) ? action
+      : isObject(action) ? convertActionObject(name, action, actions)
+      : null
+    // Action naming convention: `'<method> <path>'`, or just `'<method>'` for
+    // the default methods.
+    let [method, path = ''] = name.split(' ')
+    if (!isMethodAction(method)) {
+      path = name
     }
     // Custom member actions have their own class so they can fetch the members
     // ahead of their call.
@@ -137,14 +154,17 @@ export class Controller {
     this.setupActionRoute(
       type,
       // eslint-disable-next-line new-cap
-      new actionClass(this, handler, type, name, verb, path, authorize)
+      new actionClass(
+        this, actions, handler, type, name, method, path, authorize
+      )
     )
+    return handler
   }
 
   setupActionRoute(type, action) {
     const url = this.getUrl(type, action.path)
-    const { verb, transacted, authorize } = action
-    this.setupRoute(verb, url, transacted, authorize, action, [
+    const { method, transacted, authorize } = action
+    this.setupRoute(method, url, transacted, authorize, action, [
       async ctx => {
         try {
           const res = await action.callAction(ctx)
@@ -232,11 +252,6 @@ export class Controller {
     ])
   }
 
-  compose() {
-    // To be overridden in sub-classes, if the controller needs to install
-    // middleware. For normal routes, use `this.app.addRoute()` instead.
-  }
-
   getPath(type, path) {
     // To be overridden by sub-classes.
     return path
@@ -250,11 +265,11 @@ export class Controller {
 
   inheritValues(type) {
     // Gets the controller class's instance field for a given action type, e.g.
-    // `controller` (Controller), `collection`, `member` (ModelController,
-    // RelationController), `relation` (RelationController), and sets up an
+    // `controller` (`Controller`), `collection`, `member` (`ModelController`,
+    // `RelationController`), `relation` (`RelationController`), and sets up an
     // inheritance chain for it that goes all the way up to it base class (e.g.
-    // CollectionController), so that the default definitions for all http verbs
-    // can be correctly inherited and overridden while using `super.<action>()`.
+    // `CollectionController`), so that the default definitions for all HTTP
+    // methods can be inherited and overridden while using `super.<action>()`.
     const parentClass = Object.getPrototypeOf(this.constructor)
     // Create one instance of each controller class up the chain in order to
     // get to their definitions of the inheritable values. Cache both instance
@@ -308,43 +323,44 @@ export class Controller {
     // NOTE: `handleAllow()` and `handleAuthorize()` are applied in sequence of
     // the `values` inheritance, from sub-class to base-class.
 
-    const mergedAllow = {}
-    const mergedAuthorize = {}
-    let hasOwnAllow = false
+    let allowMap = {}
+    const authorizeMap = {}
 
-    const excludeKey = key => ['allow', 'authorize'].includes(key)
+    const includeKey = key => !['allow', 'authorize'].includes(key)
 
     const handleAllow = (allow, current) => {
+      const getFilteredMap = keys =>
+        Object.fromEntries(keys.filter(includeKey).map(key => [key, true]))
+
       if (allow) {
-        allow = asArray(allow)
-        hasOwnAllow = true
-      } else if (!hasOwnAllow) {
-        // Only keep adding to the merged `allow` if we didn't already encounter
-        // an own `allow` object further up the chain.
-        allow = Object.keys(current)
-      }
-      if (allow) {
-        if (allow.includes('*')) {
-          allow = getAllKeys(current)
+        // The controller action object provides its own allow setting:
+        // - Clear whatever has been collected in `mergedAllow` so far
+        // - Merge the `allow` setting with all the own keys of the object,
+        //   unless:
+        // - If the allow setting includes '*', allow all keys of the object,
+        //   even the inherited ones.
+        let keys = asArray(allow)
+        if (keys.includes('*')) {
+          keys = getAllKeys(current)
+        } else {
+          keys = [
+            ...keys,
+            ...getOwnKeys(current)
+          ]
         }
-        for (const key of allow) {
-          if (!excludeKey(key)) {
-            mergedAllow[key] = true
-          }
-        }
+        allowMap = getFilteredMap(keys) // Clear previous keys by overriding.
+      } else {
+        // The controller action object does not provide its own allow setting,
+        // so add its own keys to the already allowed inherited keys so far.
+        Object.assign(allowMap, getFilteredMap(getOwnKeys(current)))
       }
+      // console.log('allow', Object.keys(allowMap))
     }
 
     const handleAuthorize = authorize => {
       const add = (key, value) => {
-        // Since we're walking up in the inheritance chain, only take on an
-        // authorize setting for a given key if it wasn't already defined before
-        if (
-          key in values &&
-          !(key in mergedAuthorize) &&
-          !excludeKey(key)
-        ) {
-          mergedAuthorize[key] = value
+        if (key in values && includeKey(key)) {
+          authorizeMap[key] = value
         }
       }
 
@@ -361,20 +377,23 @@ export class Controller {
       }
     }
 
-    // Process the `allow` and `authorize` settings in sequence of the `values`
-    // inheritance, from sub-class to base-class.
+    // Process the `allow` and `authorize` settings in reversed sequence of the
+    // `values` inheritance, from base-class to sub-class.
+    const chain = []
     let current = values
     while (current !== Object.prototype && !current.hasOwnProperty('$core')) {
-      handleAllow(getOwnProperty(current, 'allow'), current)
-      handleAuthorize(getOwnProperty(current, 'authorize'))
+      chain.unshift(current)
       current = Object.getPrototypeOf(current)
     }
 
-    // At the end of the chain, also support both settings on the controller-
-    // level, and thus applied to all action objects in the controller.
-    if (this.allow) {
-      handleAllow(this.allow, values)
+    for (const current of chain) {
+      handleAllow(getOwnProperty(current, 'allow'), current)
+      handleAuthorize(getOwnProperty(current, 'authorize'))
     }
+
+    // At the end of the chain, also support authorize settings on the
+    // controller-level, and thus applied to all action objects in the
+    // controller.
     if (this.authorize) {
       handleAuthorize(this.authorize)
     }
@@ -383,31 +402,31 @@ export class Controller {
       // Create a filtered `values` object that only contains the allowed fields
       values: getAllKeys(values).reduce(
         (result, key) => {
-          if (mergedAllow[key]) {
+          if (allowMap[key]) {
             result[key] = values[key]
           }
           return result
         },
         // Create a new object for the filtered `values` that keeps inheritance
-        // intact. This is required by `setupHandlerFromObject()`, to support
+        // intact. This is required by `convertActionObject()`, to support
         // `super` in handler functions.
         Object.create(Object.getPrototypeOf(values))
       ),
-      allow: Object.keys(mergedAllow),
-      authorize: mergedAuthorize
+      allow: Object.keys(allowMap),
+      authorize: authorizeMap
     }
   }
 
   async emitHook(type, handleResult, ctx, ...args) {
     let result = handleResult ? args.shift() : undefined
-    for (const handler of this.listeners(type)) {
+    for (const listener of this.listeners(type)) {
       if (handleResult) {
-        const res = await handler.call(this, ctx, result, ...args)
+        const res = await listener.call(this, ctx, result, ...args)
         if (res !== undefined) {
           result = res
         }
       } else {
-        await handler.call(this, ctx, ...args)
+        await listener.call(this, ctx, ...args)
       }
     }
     return result
@@ -503,62 +522,53 @@ EventEmitter.mixin(Controller.prototype)
 
 const inheritanceMap = new WeakMap()
 
-function setupHandlerFromObject(object, actions) {
+function convertActionObject(name, object, actions) {
   const {
     handler,
     action,
     authorize,
+    transacted,
+    scope,
     parameters,
     returns,
-    scope,
-    transacted
+    ...rest
   } = object
 
   // In order to suport `super` calls in the `handler` function in object
   // notation, deploy this crazy JS sorcery:
   Object.setPrototypeOf(object, Object.getPrototypeOf(actions))
 
-  handler.authorize = authorize
-  handler.transacted = transacted
-
   if (action) {
-    const [verb, path] = asArray(action)
-    handler.verb = verb
+    deprecate(`action.action is deprecated. Use action.method and action.path instead.`)
+    const [method, path] = asArray(action)
+    handler.method = method
     handler.path = path
   }
 
-  if (parameters) {
-    const [_parameters, options] = parameters
-    const hasOptions = isArray(_parameters)
-    handler.parameters = hasOptions ? _parameters : parameters
-
-    // If validation options are provided, expose them through
-    // `handler.options.parameters`, see ControllerAction
-    if (hasOptions) {
-      handler.options = {
-        ...handler.options,
-        parameters: options
-      }
-    }
+  if (!handler) {
+    throw new Error(`Missing handler in '${name}' action: ${formatJson(object)}`)
   }
 
-  if (returns) {
-    const [_returns, options] = asArray(returns)
-    handler.returns = _returns
+  handler.authorize = authorize ?? null
+  handler.transacted = transacted ?? null
+  handler.scope = scope ? asArray(scope) : null
 
-    // If validation options are provided, expose them through
-    // `handler.options.returns`, see ControllerAction
-    if (options) {
-      handler.options = {
-        ...handler.options,
-        parameters: options
-      }
-    }
-  }
+  processHandlerParameters(handler, 'parameters', parameters)
+  processHandlerParameters(handler, 'returns', returns)
 
-  if (scope) {
-    handler.scope = asArray(scope)
-  }
+  return Object.assign(handler, rest)
+}
 
-  return handler
+function isMethodAction(name) {
+  return {
+    get: true,
+    delete: true,
+    post: true,
+    put: true,
+    patch: true,
+    head: true,
+    options: true,
+    trace: true,
+    connect: true
+  }[name] || false
 }

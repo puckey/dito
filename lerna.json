@@ -1,14 +1,14 @@
 {
-  "lerna": "4.0.0",
-  "version": "0.260.2",
+  "lerna": "5.1.8",
+  "version": "1.9.0",
   "packages": [
     "packages/*"
   ],
   "npmClient": "yarn",
-  "useWorkspaces": true,
   "command": {
     "publish": {
       "registry": "https://rg-repo.herokuapp.com"
     }
-  }
+  },
+  "useWorkspaces": true
 }

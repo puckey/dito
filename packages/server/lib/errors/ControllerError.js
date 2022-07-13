@@ -1,0 +1,24 @@
+"use strict";
+
+exports.__esModule = true;
+exports.ControllerError = void 0;
+
+var _ResponseError = require("./ResponseError");
+
+var _utils = require("@ditojs/utils");
+
+class ControllerError extends _ResponseError.ResponseError {
+  constructor(controller, error) {
+    const {
+      name
+    } = (0, _utils.isFunction)(controller) ? controller : controller.constructor;
+    super(`Controller ${name}: ${error}`, {
+      message: `Controller ${name}: Controller error`,
+      status: 400
+    });
+  }
+
+}
+
+exports.ControllerError = ControllerError;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9lcnJvcnMvQ29udHJvbGxlckVycm9yLmpzIl0sIm5hbWVzIjpbIkNvbnRyb2xsZXJFcnJvciIsIlJlc3BvbnNlRXJyb3IiLCJjb25zdHJ1Y3RvciIsImNvbnRyb2xsZXIiLCJlcnJvciIsIm5hbWUiLCJtZXNzYWdlIiwic3RhdHVzIl0sIm1hcHBpbmdzIjoiOzs7OztBQUFBOztBQUNBOztBQUVPLE1BQU1BLGVBQU4sU0FBOEJDLDRCQUE5QixDQUE0QztBQUNqREMsRUFBQUEsV0FBVyxDQUFDQyxVQUFELEVBQWFDLEtBQWIsRUFBb0I7QUFDN0IsVUFBTTtBQUFFQyxNQUFBQTtBQUFGLFFBQVcsdUJBQVdGLFVBQVgsSUFBeUJBLFVBQXpCLEdBQ2JBLFVBQVUsQ0FBQ0QsV0FEZjtBQUVBLFVBQU8sY0FBYUcsSUFBSyxLQUFJRCxLQUFNLEVBQW5DLEVBQXNDO0FBQ3BDRSxNQUFBQSxPQUFPLEVBQUcsY0FBYUQsSUFBSyxvQkFEUTtBQUVwQ0UsTUFBQUEsTUFBTSxFQUFFO0FBRjRCLEtBQXRDO0FBSUQ7O0FBUmdEIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgUmVzcG9uc2VFcnJvciB9IGZyb20gJy4vUmVzcG9uc2VFcnJvcidcbmltcG9ydCB7IGlzRnVuY3Rpb24gfSBmcm9tICdAZGl0b2pzL3V0aWxzJ1xuXG5leHBvcnQgY2xhc3MgQ29udHJvbGxlckVycm9yIGV4dGVuZHMgUmVzcG9uc2VFcnJvciB7XG4gIGNvbnN0cnVjdG9yKGNvbnRyb2xsZXIsIGVycm9yKSB7XG4gICAgY29uc3QgeyBuYW1lIH0gPSBpc0Z1bmN0aW9uKGNvbnRyb2xsZXIpID8gY29udHJvbGxlclxuICAgICAgOiBjb250cm9sbGVyLmNvbnN0cnVjdG9yXG4gICAgc3VwZXIoYENvbnRyb2xsZXIgJHtuYW1lfTogJHtlcnJvcn1gLCB7XG4gICAgICBtZXNzYWdlOiBgQ29udHJvbGxlciAke25hbWV9OiBDb250cm9sbGVyIGVycm9yYCxcbiAgICAgIHN0YXR1czogNDAwXG4gICAgfSlcbiAgfVxufVxuIl19

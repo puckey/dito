@@ -1,0 +1,11 @@
+"use strict";
+
+exports.__esModule = true;
+exports.index = void 0;
+const index = {
+  metaSchema: {
+    type: 'boolean'
+  }
+};
+exports.index = index;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9zY2hlbWEva2V5d29yZHMvX2luZGV4LmpzIl0sIm5hbWVzIjpbImluZGV4IiwibWV0YVNjaGVtYSIsInR5cGUiXSwibWFwcGluZ3MiOiI7Ozs7QUFFTyxNQUFNQSxLQUFLLEdBQUc7QUFDbkJDLEVBQUFBLFVBQVUsRUFBRTtBQUNWQyxJQUFBQSxJQUFJLEVBQUU7QUFESTtBQURPLENBQWQiLCJzb3VyY2VzQ29udGVudCI6WyIvLyBUaGlzIGtleXdvcmQgaXMgdGhlcmUgZm9yIG1ldGEtaW5mb3JtYXRpb24gYW5kIG1pZ3JhdGlvbiBnZW5lcmF0aW9uIG9ubHkuXG4vLyBJdCBkb2Vzbid0IGRvIGFueSBhY3R1YWwgdmFsaWRhdGlvbi5cbmV4cG9ydCBjb25zdCBpbmRleCA9IHtcbiAgbWV0YVNjaGVtYToge1xuICAgIHR5cGU6ICdib29sZWFuJ1xuICB9XG59XG4iXX0=

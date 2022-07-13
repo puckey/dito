@@ -1,0 +1,10 @@
+"use strict";
+
+exports.__esModule = true;
+exports.empty = void 0;
+const empty = {
+  validate: value => !value,
+  message: 'needs to be empty'
+};
+exports.empty = empty;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9zY2hlbWEvZm9ybWF0cy9fZW1wdHkuanMiXSwibmFtZXMiOlsiZW1wdHkiLCJ2YWxpZGF0ZSIsInZhbHVlIiwibWVzc2FnZSJdLCJtYXBwaW5ncyI6Ijs7OztBQUFPLE1BQU1BLEtBQUssR0FBRztBQUNuQkMsRUFBQUEsUUFBUSxFQUFFQyxLQUFLLElBQUksQ0FBQ0EsS0FERDtBQUVuQkMsRUFBQUEsT0FBTyxFQUFFO0FBRlUsQ0FBZCIsInNvdXJjZXNDb250ZW50IjpbImV4cG9ydCBjb25zdCBlbXB0eSA9IHtcbiAgdmFsaWRhdGU6IHZhbHVlID0+ICF2YWx1ZSxcbiAgbWVzc2FnZTogJ25lZWRzIHRvIGJlIGVtcHR5J1xufVxuIl19

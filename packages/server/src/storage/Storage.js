@@ -1,10 +1,11 @@
 import path from 'path'
+import { URL } from 'url'
 import multer from '@koa/multer'
+import picomatch from 'picomatch'
 import imageSize from 'image-size'
 import { PassThrough } from 'stream'
-import { URL } from 'url'
 import { hyphenate, toPromiseCallback } from '@ditojs/utils'
-import { AssetFile } from './AssetFile'
+import { AssetFile } from './AssetFile.js'
 
 const storageClasses = {}
 
@@ -55,6 +56,10 @@ export class Storage {
 
   getUniqueKey(name) {
     return AssetFile.getUniqueKey(name)
+  }
+
+  isImportSourceAllowed(url) {
+    return picomatch.isMatch(url, this.config.allowedImports || [])
   }
 
   convertAssetFile(file) {

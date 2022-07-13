@@ -1,0 +1,11 @@
+"use strict";
+
+exports.__esModule = true;
+exports.primary = void 0;
+const primary = {
+  metaSchema: {
+    type: 'boolean'
+  }
+};
+exports.primary = primary;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9zY2hlbWEva2V5d29yZHMvX3ByaW1hcnkuanMiXSwibmFtZXMiOlsicHJpbWFyeSIsIm1ldGFTY2hlbWEiLCJ0eXBlIl0sIm1hcHBpbmdzIjoiOzs7O0FBRU8sTUFBTUEsT0FBTyxHQUFHO0FBQ3JCQyxFQUFBQSxVQUFVLEVBQUU7QUFDVkMsSUFBQUEsSUFBSSxFQUFFO0FBREk7QUFEUyxDQUFoQiIsInNvdXJjZXNDb250ZW50IjpbIi8vIFRoaXMga2V5d29yZCBpcyB0aGVyZSBmb3IgbWV0YS1pbmZvcm1hdGlvbiBhbmQgbWlncmF0aW9uIGdlbmVyYXRpb24gb25seS5cbi8vIEl0IGRvZXNuJ3QgZG8gYW55IGFjdHVhbCB2YWxpZGF0aW9uLlxuZXhwb3J0IGNvbnN0IHByaW1hcnkgPSB7XG4gIG1ldGFTY2hlbWE6IHtcbiAgICB0eXBlOiAnYm9vbGVhbidcbiAgfVxufVxuIl19

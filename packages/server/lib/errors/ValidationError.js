@@ -1,0 +1,19 @@
+"use strict";
+
+exports.__esModule = true;
+exports.ValidationError = void 0;
+
+var _ResponseError = require("./ResponseError");
+
+class ValidationError extends _ResponseError.ResponseError {
+  constructor(error) {
+    super(error, {
+      message: 'Validation error',
+      status: 400
+    });
+  }
+
+}
+
+exports.ValidationError = ValidationError;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9lcnJvcnMvVmFsaWRhdGlvbkVycm9yLmpzIl0sIm5hbWVzIjpbIlZhbGlkYXRpb25FcnJvciIsIlJlc3BvbnNlRXJyb3IiLCJjb25zdHJ1Y3RvciIsImVycm9yIiwibWVzc2FnZSIsInN0YXR1cyJdLCJtYXBwaW5ncyI6Ijs7Ozs7QUFBQTs7QUFFTyxNQUFNQSxlQUFOLFNBQThCQyw0QkFBOUIsQ0FBNEM7QUFDakRDLEVBQUFBLFdBQVcsQ0FBQ0MsS0FBRCxFQUFRO0FBQ2pCLFVBQU1BLEtBQU4sRUFBYTtBQUFFQyxNQUFBQSxPQUFPLEVBQUUsa0JBQVg7QUFBK0JDLE1BQUFBLE1BQU0sRUFBRTtBQUF2QyxLQUFiO0FBQ0Q7O0FBSGdEIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgUmVzcG9uc2VFcnJvciB9IGZyb20gJy4vUmVzcG9uc2VFcnJvcidcblxuZXhwb3J0IGNsYXNzIFZhbGlkYXRpb25FcnJvciBleHRlbmRzIFJlc3BvbnNlRXJyb3Ige1xuICBjb25zdHJ1Y3RvcihlcnJvcikge1xuICAgIHN1cGVyKGVycm9yLCB7IG1lc3NhZ2U6ICdWYWxpZGF0aW9uIGVycm9yJywgc3RhdHVzOiA0MDAgfSlcbiAgfVxufVxuIl19

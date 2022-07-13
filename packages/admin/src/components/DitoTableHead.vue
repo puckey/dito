@@ -3,6 +3,7 @@
     tr
       th(
         v-for="(column, index) in columns"
+        v-if="shouldRender(column)"
         :class="getColumnClass(column)"
       )
         router-link(
@@ -46,13 +47,13 @@
           padding: $input-padding
           &:empty::after
             // Prevent empty <th> from collapsing
-            content: '\00a0'
+            content: '\200b' // zero-width space
         > span
           display: block
 </style>
 
 <script>
-import DitoComponent from '@/DitoComponent'
+import DitoComponent from '../DitoComponent.js'
 import { hyphenate } from '@ditojs/utils'
 
 // @vue/component

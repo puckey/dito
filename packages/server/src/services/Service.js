@@ -11,6 +11,8 @@ export class Service {
 
   setup(config) {
     this.config = config
+    this.app.on('before:start', () => this.start())
+    this.app.on('after:stop', () => this.stop())
   }
 
   // @overridable
@@ -26,6 +28,7 @@ export class Service {
   }
 
   getLogger(ctx) {
-    return ctx.logger.child({ name: this.name })
+    const logger = ctx?.logger ?? this.app.logger
+    return logger.child({ name: this.name })
   }
 }

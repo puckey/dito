@@ -1,0 +1,19 @@
+"use strict";
+
+exports.__esModule = true;
+exports.AuthorizationError = void 0;
+
+var _ResponseError = require("./ResponseError");
+
+class AuthorizationError extends _ResponseError.ResponseError {
+  constructor(error) {
+    super(error, {
+      message: 'Unauthorized Access',
+      status: 401
+    });
+  }
+
+}
+
+exports.AuthorizationError = AuthorizationError;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9lcnJvcnMvQXV0aG9yaXphdGlvbkVycm9yLmpzIl0sIm5hbWVzIjpbIkF1dGhvcml6YXRpb25FcnJvciIsIlJlc3BvbnNlRXJyb3IiLCJjb25zdHJ1Y3RvciIsImVycm9yIiwibWVzc2FnZSIsInN0YXR1cyJdLCJtYXBwaW5ncyI6Ijs7Ozs7QUFBQTs7QUFFTyxNQUFNQSxrQkFBTixTQUFpQ0MsNEJBQWpDLENBQStDO0FBQ3BEQyxFQUFBQSxXQUFXLENBQUNDLEtBQUQsRUFBUTtBQUNqQixVQUFNQSxLQUFOLEVBQWE7QUFBRUMsTUFBQUEsT0FBTyxFQUFFLHFCQUFYO0FBQWtDQyxNQUFBQSxNQUFNLEVBQUU7QUFBMUMsS0FBYjtBQUNEOztBQUhtRCIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IFJlc3BvbnNlRXJyb3IgfSBmcm9tICcuL1Jlc3BvbnNlRXJyb3InXG5cbmV4cG9ydCBjbGFzcyBBdXRob3JpemF0aW9uRXJyb3IgZXh0ZW5kcyBSZXNwb25zZUVycm9yIHtcbiAgY29uc3RydWN0b3IoZXJyb3IpIHtcbiAgICBzdXBlcihlcnJvciwgeyBtZXNzYWdlOiAnVW5hdXRob3JpemVkIEFjY2VzcycsIHN0YXR1czogNDAxIH0pXG4gIH1cbn1cbiJdfQ==

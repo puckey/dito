@@ -1,0 +1,19 @@
+"use strict";
+
+exports.__esModule = true;
+exports.QueryBuilderError = void 0;
+
+var _ResponseError = require("./ResponseError");
+
+class QueryBuilderError extends _ResponseError.ResponseError {
+  constructor(error) {
+    super(error, {
+      message: 'Query-builder error',
+      status: 400
+    });
+  }
+
+}
+
+exports.QueryBuilderError = QueryBuilderError;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9lcnJvcnMvUXVlcnlCdWlsZGVyRXJyb3IuanMiXSwibmFtZXMiOlsiUXVlcnlCdWlsZGVyRXJyb3IiLCJSZXNwb25zZUVycm9yIiwiY29uc3RydWN0b3IiLCJlcnJvciIsIm1lc3NhZ2UiLCJzdGF0dXMiXSwibWFwcGluZ3MiOiI7Ozs7O0FBQUE7O0FBRU8sTUFBTUEsaUJBQU4sU0FBZ0NDLDRCQUFoQyxDQUE4QztBQUNuREMsRUFBQUEsV0FBVyxDQUFDQyxLQUFELEVBQVE7QUFDakIsVUFBTUEsS0FBTixFQUFhO0FBQUVDLE1BQUFBLE9BQU8sRUFBRSxxQkFBWDtBQUFrQ0MsTUFBQUEsTUFBTSxFQUFFO0FBQTFDLEtBQWI7QUFDRDs7QUFIa0QiLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBSZXNwb25zZUVycm9yIH0gZnJvbSAnLi9SZXNwb25zZUVycm9yJ1xuXG5leHBvcnQgY2xhc3MgUXVlcnlCdWlsZGVyRXJyb3IgZXh0ZW5kcyBSZXNwb25zZUVycm9yIHtcbiAgY29uc3RydWN0b3IoZXJyb3IpIHtcbiAgICBzdXBlcihlcnJvciwgeyBtZXNzYWdlOiAnUXVlcnktYnVpbGRlciBlcnJvcicsIHN0YXR1czogNDAwIH0pXG4gIH1cbn1cbiJdfQ==

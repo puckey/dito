@@ -45,14 +45,14 @@
           box-sizing: border-box
           // Because tables have a funny way of allowing too much width growth:
           max-width: $content-width
-        & +.dito-components
+        & +.dito-pane
           // Needed for transition-height in DitoSchema:
           min-height: $form-spacing
 </style>
 
 <script>
-import DitoComponent from '@/DitoComponent'
-import { isCompact } from '@/utils/schema'
+import DitoComponent from '../DitoComponent.js'
+import { isCompact } from '../utils/schema.js'
 // @vue/component
 export default DitoComponent.component('dito-schema-inlined', {
   props: {

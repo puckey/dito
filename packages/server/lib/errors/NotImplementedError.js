@@ -1,0 +1,19 @@
+"use strict";
+
+exports.__esModule = true;
+exports.NotImplementedError = void 0;
+
+var _ResponseError = require("./ResponseError");
+
+class NotImplementedError extends _ResponseError.ResponseError {
+  constructor(error) {
+    super(error, {
+      message: 'Method not implemented',
+      status: 404
+    });
+  }
+
+}
+
+exports.NotImplementedError = NotImplementedError;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9lcnJvcnMvTm90SW1wbGVtZW50ZWRFcnJvci5qcyJdLCJuYW1lcyI6WyJOb3RJbXBsZW1lbnRlZEVycm9yIiwiUmVzcG9uc2VFcnJvciIsImNvbnN0cnVjdG9yIiwiZXJyb3IiLCJtZXNzYWdlIiwic3RhdHVzIl0sIm1hcHBpbmdzIjoiOzs7OztBQUFBOztBQUVPLE1BQU1BLG1CQUFOLFNBQWtDQyw0QkFBbEMsQ0FBZ0Q7QUFDckRDLEVBQUFBLFdBQVcsQ0FBQ0MsS0FBRCxFQUFRO0FBQ2pCLFVBQU1BLEtBQU4sRUFBYTtBQUFFQyxNQUFBQSxPQUFPLEVBQUUsd0JBQVg7QUFBcUNDLE1BQUFBLE1BQU0sRUFBRTtBQUE3QyxLQUFiO0FBQ0Q7O0FBSG9EIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgUmVzcG9uc2VFcnJvciB9IGZyb20gJy4vUmVzcG9uc2VFcnJvcidcblxuZXhwb3J0IGNsYXNzIE5vdEltcGxlbWVudGVkRXJyb3IgZXh0ZW5kcyBSZXNwb25zZUVycm9yIHtcbiAgY29uc3RydWN0b3IoZXJyb3IpIHtcbiAgICBzdXBlcihlcnJvciwgeyBtZXNzYWdlOiAnTWV0aG9kIG5vdCBpbXBsZW1lbnRlZCcsIHN0YXR1czogNDA0IH0pXG4gIH1cbn1cbiJdfQ==

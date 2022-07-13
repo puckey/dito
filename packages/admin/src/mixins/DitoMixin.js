@@ -1,14 +1,14 @@
-import appState from '@/appState'
-import DitoComponent from '@/DitoComponent'
-import DitoContext from '@/DitoContext'
-import EmitterMixin from './EmitterMixin'
-import { isMatchingType, convertType } from '@/utils/type'
-import { getResource, getMemberResource } from '@/utils/resource'
-import { deprecate } from '@/utils/deprecate'
 import {
   isObject, isArray, isString, isFunction, asArray, equals,
   getValueAtDataPath, labelize, hyphenate, format
 } from '@ditojs/utils'
+import appState from '../appState.js'
+import DitoComponent from '../DitoComponent.js'
+import DitoContext from '../DitoContext.js'
+import EmitterMixin from './EmitterMixin.js'
+import { isMatchingType, convertType } from '../utils/type.js'
+import { getResource, getMemberResource } from '../utils/resource.js'
+import { deprecate } from '../utils/deprecate.js'
 
 // @vue/component
 export default {
@@ -25,7 +25,8 @@ export default {
     '$sourceComponent',
     '$resourceComponent',
     '$dialogComponent',
-    '$panelComponent'
+    '$panelComponent',
+    '$tabComponent'
   ],
 
   provide() {
@@ -67,6 +68,10 @@ export default {
 
     locale() {
       return this.api.locale
+    },
+
+    context() {
+      return new DitoContext(this, { nested: false })
     },
 
     rootComponent() {
@@ -118,6 +123,10 @@ export default {
       return this.$panelComponent()
     },
 
+    tabComponent() {
+      return this.$tabComponent()
+    },
+
     parentSchemaComponent() {
       return this.schemaComponent?.$parent.schemaComponent
     },
@@ -134,10 +143,6 @@ export default {
     // that loads its own data from an associated API resource.
     rootData() {
       return this.dataComponent?.data
-    },
-
-    context() {
-      return new DitoContext(this)
     }
   },
 
@@ -153,7 +158,7 @@ export default {
     // We can't store this in `data`, as this is already the pure data from the
     // API server. That's what the `store` is for: Memory that's available as
     // long as the current editing path is still valid. For type components,
-    // this memory is provided by the parent, see RouteMixin and DitoComponents.
+    // this memory is provided by the parent, see RouteMixin and DitoPane.
     getStore(key) {
       return this.store[key]
     },
@@ -472,7 +477,7 @@ export default {
 
       const addEvent = (key, event, callback) => {
         if (isFunction(callback)) {
-          this.on(event, callback)
+          this.on(hyphenate(event), callback)
         } else {
           console.error(`Invalid event definition: ${key}: ${callback}`)
         }
@@ -488,7 +493,7 @@ export default {
       // doing things. Decide which one to remove.
       for (const [key, value] of Object.entries(this.schema)) {
         if (/^on[A-Z]/.test(key)) {
-          addEvent(key, hyphenate(key.slice(2)), value)
+          addEvent(key, key.slice(2), value)
         }
       }
     },
@@ -518,6 +523,10 @@ export default {
         }
         return res
       }
+    },
+
+    emitSchemaEvent(event, params) {
+      return this.schemaComponent.emitEvent(event, params)
     }
   }
 }

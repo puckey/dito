@@ -21,7 +21,7 @@
       .dito-tree-leaf(v-else)
         .dito-tree-label(v-html="label")
       .dito-buttons.dito-buttons-small(v-if="hasEditButtons")
-        // Firefox doesn't like <button> here, so use <a> instead:
+        //- Firefox doesn't like <button> here, so use <a> instead:
         a.dito-button(
           v-if="draggable"
           v-bind="getButtonAttributes(verbs.drag)"
@@ -150,11 +150,11 @@
 
 <script>
 import VueDraggable from 'vuedraggable'
-import DitoComponent from '@/DitoComponent'
-import OrderedMixin from '@/mixins/OrderedMixin'
-import { appendDataPath } from '@/utils/data'
-import { getSchemaAccessor } from '@/utils/accessor'
-import { getNamedSchemas, hasFormSchema } from '@/utils/schema'
+import DitoComponent from '../DitoComponent.js'
+import OrderedMixin from '../mixins/OrderedMixin.js'
+import { appendDataPath } from '../utils/data.js'
+import { getSchemaAccessor } from '../utils/accessor.js'
+import { getNamedSchemas, hasFormSchema } from '../utils/schema.js'
 
 // @vue/component
 export default DitoComponent.component('dito-tree-item', {

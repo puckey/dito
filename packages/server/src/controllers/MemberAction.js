@@ -1,4 +1,4 @@
-import ControllerAction from './ControllerAction'
+import ControllerAction from './ControllerAction.js'
 
 export default class MemberAction extends ControllerAction {
   // @override
@@ -9,7 +9,7 @@ export default class MemberAction extends ControllerAction {
 
   // @override
   async getMember(ctx, param) {
-    // member @parameters() can provide special query parameters as well,
+    // member parameters can provide special query parameters as well,
     // and they can even controll `forUpdate()` behavior:
     // {
     //   member: true,

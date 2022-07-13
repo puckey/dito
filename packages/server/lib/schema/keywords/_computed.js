@@ -1,0 +1,11 @@
+"use strict";
+
+exports.__esModule = true;
+exports.computed = void 0;
+const computed = {
+  metaSchema: {
+    type: 'boolean'
+  }
+};
+exports.computed = computed;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9zY2hlbWEva2V5d29yZHMvX2NvbXB1dGVkLmpzIl0sIm5hbWVzIjpbImNvbXB1dGVkIiwibWV0YVNjaGVtYSIsInR5cGUiXSwibWFwcGluZ3MiOiI7Ozs7QUFFTyxNQUFNQSxRQUFRLEdBQUc7QUFDdEJDLEVBQUFBLFVBQVUsRUFBRTtBQUNWQyxJQUFBQSxJQUFJLEVBQUU7QUFESTtBQURVLENBQWpCIiwic291cmNlc0NvbnRlbnQiOlsiLy8gVGhpcyBrZXl3b3JkIGlzIHRoZXJlIGZvciBtZXRhLWluZm9ybWF0aW9uIGFuZCBtaWdyYXRpb24gZ2VuZXJhdGlvbiBvbmx5LlxuLy8gSXQgZG9lc24ndCBkbyBhbnkgYWN0dWFsIHZhbGlkYXRpb24uXG5leHBvcnQgY29uc3QgY29tcHV0ZWQgPSB7XG4gIG1ldGFTY2hlbWE6IHtcbiAgICB0eXBlOiAnYm9vbGVhbidcbiAgfVxufVxuIl19
