@@ -264,14 +264,11 @@ export interface AdminConfig {
    * Path to the dist/src/admin directory. Mandatory when in production
    * mode.
    */
-  hotReload?: boolean
   dist?: string;
   /**
    * @default Application.config.env or `'production'` when missing
    */
   mode?: 'production' | 'development'
-  // TODO: document admin plugins
-  plugins?: (string | { id: string; apply: any })[]
   /**
    * Settings accessible on the browser side as `global.dito.settings`.
    */
@@ -1375,15 +1372,8 @@ export class UsersController<M extends Model> extends ModelController<M> {}
 
 export class AdminController extends Controller {
   config?: AdminConfig
-  /**
-   * To be overridden in sub-classes, if the controller needs to install
-   * middleware. For normal routes, use `this.app.addRoute()` instead.
-   */
-  setupKoaWebpack(): Promise<void>
-  getVueConfig(): any
-  chainWebpack(conf: any): void
-  getVuePlugins(): { id: string; apply: (...args: any[]) => any }[]
-  getWebpackConfig(): any
+  setupViteServer(): any
+  getViteConfig(): any
 }
 
 // TODO: UserMixin
