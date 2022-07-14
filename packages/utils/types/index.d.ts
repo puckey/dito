@@ -119,10 +119,10 @@ export function equals(arg1: any, arg2: any): boolean
 
 // TODO: document groupBy
 export function groupBy<T, K extends keyof any>(
-  list: T[], callback: (item: T) => K)
+  list: T[], callback: (item: T) => K
 ): {
   [index: K]: T[]
-}>
+}
 
 export function groupBy<T extends object>(
   collection: T,
