@@ -1371,7 +1371,7 @@ export class TimeStampedModel extends Model {
   updatedAt: Date
 }
 
-export class UserController<M extends Model> extends ModelController<M> {}
+export class UsersController<M extends Model> extends ModelController<M> {}
 
 export class AdminController extends Controller {
   config?: AdminConfig
