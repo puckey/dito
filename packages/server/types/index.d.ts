@@ -7,7 +7,7 @@
 
 import { DateFormat } from '@ditojs/utils'
 import koaCors from '@koa/cors'
-import * as Ajv from 'ajv'
+import * as Ajv from 'ajv/dist/2020.js'
 import * as aws from 'aws-sdk'
 import * as dbErrors from 'db-errors'
 import * as EventEmitter2 from 'eventemitter2'
