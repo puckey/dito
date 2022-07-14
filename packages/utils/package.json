@@ -11,7 +11,8 @@
     ".": "./src/index.js"
   },
   "files": [
-    "src/"
+    "src/",
+    "types/"
   ],
   "engines": {
     "node": ">= 16.0.0",
@@ -26,5 +27,6 @@
   ],
   "dependencies": {
     "punycode": "^2.1.1"
-  }
+  },
+  "types": "types"
 }
