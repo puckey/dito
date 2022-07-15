@@ -1282,7 +1282,7 @@ export type ModelControllerAction<
 export type ModelControllerActions<
   $ModelController extends ModelController<Model> = ModelController<Model>
 > = {
-  [name: ControllerActionName]: ModelControllerAction,
+  [name: ControllerActionName]: ModelControllerAction<$ModelController>,
   allow?: ControllerActionName[],
   authorize?: Authorize
 }
