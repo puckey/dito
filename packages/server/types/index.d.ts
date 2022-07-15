@@ -1077,7 +1077,7 @@ export class Controller {
    * A list of allowed actions. If provided, only the action names listed here
    * as strings will be mapped to routes, everything else will be omitted.
    */
-  allow?: ControllerActionName[]
+  allow?: OrReadOnly<ControllerActionName[]>
 
   /**
    * Authorization
@@ -1283,7 +1283,7 @@ export type ModelControllerActions<
   $ModelController extends ModelController<Model> = ModelController<Model>
 > = {
   [name: ControllerActionName]: ModelControllerAction<$ModelController>,
-  allow?: ControllerActionName[],
+  allow?: OrReadOnly<ControllerActionName[]>,
   authorize?: Authorize
 }
 
@@ -1310,7 +1310,7 @@ export type ModelControllerMemberActions<
   $ModelController extends ModelController<Model>
 > = {
   [name: ControllerActionName]: ModelControllerMemberAction<$ModelController>;
-  allow?: ControllerActionName[];
+  allow?: OrReadOnly<ControllerActionName[]>;
   authorize?: Authorize
 }
 
@@ -2023,6 +2023,8 @@ type LiteralUnion<T extends U, U = string> = T | (U & Record<never, never>);
 type ReflectArrayType<Source, Target> = Source extends any[] ? Target[] : Target
 
 type OrArrayOf<T> = T[] | T
+
+type OrReadOnly<T> = ReadOnly<T> | T
 
 type OrPromiseOf<T> = Promise<T> | T
 
