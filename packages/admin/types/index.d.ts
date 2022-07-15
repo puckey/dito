@@ -2,12 +2,15 @@
 // Project: <https://github.com/ditojs/dito/>
 
 import {
-  DateFormat, format as utilsFormat, NumberFormat,
+  DateFormat,
+  format as utilsFormat,
+  NumberFormat,
   TimeFormat
 } from '@ditojs/utils'
 import { AxiosResponse as Response } from 'axios'
 import {
-  ConditionalExcept, IterableElement,
+  ConditionalExcept,
+  IterableElement,
   RequireAtLeastOne,
   SetOptional
 } from 'type-fest'
@@ -28,7 +31,7 @@ export type PerformRequest = <T>({
   method,
   data,
   params,
-  headers
+  headers,
 }: {
   url: string
   /**
@@ -493,7 +496,8 @@ export type DateSchema<
 }
 
 export type ButtonSchema<
-  $State extends State = CreateState,
+  $InputState extends State = CreateState,
+  $State extends State = $InputState,
   $EventHandler = ItemEventHandler<$State>
 > = BaseSchema<$State> & {
   /**
@@ -776,12 +780,12 @@ export type RadioSchema<$State extends State = CreateState> =
 
 export type SectionSchema<$State extends State = CreateState> =
   BaseSchema<$State> & {
-  /**
-   * The type of the component.
-   */
-  type: 'section'
-  components?: Components<CreateState<$Item>>
-}
+    /**
+     * The type of the component.
+     */
+    type: 'section'
+    components?: Components<CreateState<$Item>>
+  }
 
 export type CheckboxSchema<$State extends State = CreateState> =
   BaseSchema<$State> & {
@@ -895,12 +899,6 @@ type ListSchemaItemState<$State extends State = CreateState> = CreateState<
   AnyGate<$State['name'], IterableElement<$State['item'][$State['name']]>>
 >
 
-type ItemFormByType<$Item extends { type: string }, $Type> = $Item extends {
-  type: $Type
-}
-  ? Form<Omit<$Item, 'type'>>
-  : never
-
 export type ListSchema<
   $State extends State = CreateState,
   $ListItemState extends State = ListSchemaItemState<$State>
@@ -918,10 +916,7 @@ export type ListSchema<
      * The forms.
      */
     forms?: {
-      [$Type in $ListItemState['item']['type']]: ItemFormByType<
-        $ListItemState['item'],
-        $Type
-      >
+      [key: string]: ResolvableForm
     }
     /**
      * The label given to the items. If no itemLabel is given, the default is
@@ -983,13 +978,13 @@ export type ListSchema<
 export type OrItemAccessor<
   $State extends State,
   $Params extends {} = {},
-  $ReturnValue = $State['value']
+  $ReturnValue = any
 > = ItemAccessor<$State, $Params, $ReturnValue> | $ReturnValue
 
 export type ItemAccessor<
   $State extends State = CreateState,
   $Params extends {} = {},
-  $ReturnValue = $State['value']
+  $ReturnValue = any
 > = (params: DitoContext<$State> & $Params) => $ReturnValue
 
 export type DitoContext<$State extends State> = {
@@ -998,7 +993,7 @@ export type DitoContext<$State extends State> = {
    * `false` when it points to the item itself.
    */
   nested: boolean
-  value: $State['value']
+  value: any
   dataPath: string
   name: $State['name']
   index: any
@@ -1006,9 +1001,7 @@ export type DitoContext<$State extends State> = {
   parentItemDataPath: any
   itemIndex: any
   parentItemIndex: any
-  item: {
-    [$Key in SelectItemKeys<$State['item']>]: $State['item'][$Key]
-  }
+  item: $State['item']
   /**
    * NOTE: `parentItem` isn't the closest data parent to `item`, it's the
    * closest parent that isn't an array, e.g. for relations or nested JSON
@@ -1062,7 +1055,7 @@ export type DitoContext<$State extends State> = {
   navigate(location: string | { path: string }): Promise<boolean>
   download: {
     (url: string): void
-    (options: { url: string; filename: string }): void
+    (options: { url: string filename: string }): void
   }
   getResourceUrl: any
   notify(options: {
@@ -1118,9 +1111,7 @@ export type Component<$State extends State = CreateState> =
   | SectionSchema<$State>
 
 export type Components<$State extends State> = {
-  [$name in SelectItemKeys<$State['item']>]?: Component<
-    CreateState<$State['item'], $name, $State['item'][$name]>
-  >
+  [$name: string]: Component<$State>
 }
 
 export type Buttons<$Item> = Record<
@@ -1240,7 +1231,13 @@ export type State = {
   schema: keyof SchemaByType
 }
 
-type SelectItemKeys<T> = AnyGate<
+export type ExtractModelProperties<T> = {
+  [$Key in SelectItemKeys<T>]: T[$Key] extends Model
+    ? ExtractModelProperties<T[$Key]>
+    : T[$Key]
+}
+
+export type SelectItemKeys<T> = AnyGate<
   T,
   Exclude<
     keyof ConditionalExcept<T, Function>,
@@ -1256,7 +1253,10 @@ type OrArrayOf<T> = T | T[]
 type Resolvable<T> = OrFunctionReturning<OrPromiseOf<OrRecordOf<T>>>
 
 // https://stackoverflow.com/questions/49927523/disallow-call-with-any/49928360#49928360
-type AnyGate<$CheckType, $TypeWhenNotAny, $TypeWhenAny = $CheckType> =
-  0 extends 1 & $CheckType ? $TypeWhenAny : $TypeWhenNotAny
+type AnyGate<
+  $CheckType,
+  $TypeWhenNotAny,
+  $TypeWhenAny = $CheckType
+> = 0 extends 1 & $CheckType ? $TypeWhenAny : $TypeWhenNotAny
 
 type LiteralUnion<T extends U, U = string> = T | (U & Record<never, never>)
