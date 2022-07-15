@@ -29,6 +29,7 @@
     "mini-svg-data-uri": "^1.4.4",
     "minimist": "^1.2.6",
     "postcss": "^8.4.14",
-    "postcss-inset": "^1.0.0"
+    "postcss-inset": "^1.0.0",
+    "vite-plugin-vue2": "^2.0.1"
   }
 }
