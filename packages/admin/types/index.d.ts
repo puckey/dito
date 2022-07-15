@@ -1091,7 +1091,7 @@ export type View<$Item = any> = { resource?: Resource } & (
   | SwitchSchema<CreateState<$Item>>
   | DateSchema<CreateState<$Item>>
   | ComponentSchema<CreateState<$Item>>
-  | LabelSchem<CreateState<$Item>>
+  | LabelSchema<CreateState<$Item>>
   | SectionSchema<CreateState<$Item>>
 )
 
@@ -1114,7 +1114,7 @@ export type Component<$State extends State = CreateState> =
   | SwitchSchema<$State>
   | DateSchema<$State>
   | ComponentSchema<$State>
-  | LabelSchem<$State>
+  | LabelSchema<$State>
   | SectionSchema<$State>
 
 export type Components<$State extends State> = {
@@ -1216,8 +1216,8 @@ export type SchemaByType<$State extends State = CreateState> = {
   text: InputSchema<$State>
   textarea: TextareaSchema<$State>
   upload: UploadSchema<$State>
-  label: LabelSchema<$State>,
-  section: SectionSchema<$State>,
+  label: LabelSchema<$State>
+  section: SectionSchema<$State>
   unknown: never
 }
 
