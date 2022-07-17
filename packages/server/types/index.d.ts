@@ -1953,6 +1953,10 @@ export type SelectModelProperties<T> = {
     : T[$Key]
 }
 
+// https://stackoverflow.com/questions/49927523/disallow-call-with-any/49928360#49928360
+type AnyGate<$CheckType, $TypeWhenNotAny, $TypeWhenAny = $CheckType> =
+  0 extends 1 & $CheckType ? $TypeWhenAny : $TypeWhenNotAny
+
 export type SelectModelKeys<T> = AnyGate<
   T,
   Exclude<
