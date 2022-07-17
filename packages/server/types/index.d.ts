@@ -1107,7 +1107,7 @@ export class Controller {
     config: any,
     authorize: Authorize
   ): void
-  compose(): Koa.Middleware<any, any>
+  compose(): Parameters<typeof mount>[1]
   /**
    * To be overridden by sub-classes.
    */
