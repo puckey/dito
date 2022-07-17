@@ -141,7 +141,7 @@ export type ApplicationConfig = {
      * @defaultValue `false`
      * @see https://github.com/koajs/session
      */
-    session?: boolean | koaSession.opts
+    session?: boolean | (koaSession.opts & { modelClass: string })
     /**
      * Enable passport authentication middleware
      * @defaultValue `false`
