@@ -1014,17 +1014,20 @@ export type ControllerActionHandler<$Controller extends Controller> = (
   ...args: any[]
 ) => any
 
-export type ExtractModelProperties<$Model extends Model> = {
-  [$Key in SelectModelPropertyKeys<$Model>]: $Model[$Key]
+export type ExtractModelProperties<$Model> = {
+  [$Key in SelectModelPropertyKeys<$Model>]: $Model[$Key] extends Model
+    ? ExtractModelProperties<$Model[$Key]>
+    : $Model[$Key]
 }
 
 export type Extends<$A extends any, $B extends any> = $A extends $B ? 1 : 0
 
 export type SelectModelPropertyKeys<$Model extends Model> = {
-  [K in keyof $Model]-?: {
-    1: never
-    0: K extends 'QueryBuilderType' ? never : K
-  }[Extends<$Model[K], Model | Function>]
+  [K in keyof $Model]-?: K extends 'QueryBuilderType' | 'foreignKeyId' | `$${string}`
+    ? never
+    : $Model[K] extends Function
+      ? never
+      : K
 }[keyof $Model]
 
 export type Authorize =
