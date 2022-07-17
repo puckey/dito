@@ -1861,6 +1861,7 @@ export const authorize: (
  * in order to do the mapping.
  *
  * @see {@link https://github.com/ditojs/dito/blob/master/docs/model-properties.md Model Properties}
+ * @deprecated
  */
 export const parameters: (
   ...args:
