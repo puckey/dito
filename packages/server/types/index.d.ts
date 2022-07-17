@@ -23,7 +23,7 @@ import koaResponseTime from 'koa-response-time'
 import koaSession from 'koa-session'
 import * as objection from 'objection'
 import { KnexSnakeCaseMappersFactory } from 'objection'
-import { Class, ConditionalKeys, Constructor, SetOptional, SetReturnType } from 'type-fest'
+import { Class, ConditionalExcept, ConditionalKeys, Constructor, SetOptional, SetReturnType } from 'type-fest'
 import { UserConfig } from 'vite'
 
 export type Page<$Model extends Model> = {
@@ -1946,3 +1946,18 @@ type OrPromiseOf<T> = Promise<T> | T
 
 type modelFromModelController<$ModelController extends ModelController<Model>> =
   InstanceType<Exclude<$ModelController['modelClass'], undefined>>
+
+export type SelectModelProperties<T> = {
+  [$Key in SelectModelKeys<T>]: T[$Key] extends Model
+    ? SelectModelProperties<T[$Key]>
+    : T[$Key]
+}
+
+export type SelectModelKeys<T> = AnyGate<
+  T,
+  Exclude<
+    keyof ConditionalExcept<T, Function>,
+    `$${string}` | 'QueryBuilderType' | 'foreignKeyId'
+  >,
+  string
+>

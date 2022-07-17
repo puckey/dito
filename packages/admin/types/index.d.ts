@@ -8,7 +8,7 @@ import {
   TimeFormat
 } from '@ditojs/utils'
 import { AxiosResponse as Response } from 'axios'
-import { ConditionalExcept, RequireAtLeastOne, SetOptional } from 'type-fest'
+import { RequireAtLeastOne, SetOptional } from 'type-fest'
 import Vue, { VueConstructor } from 'vue'
 
 declare global {
@@ -1175,21 +1175,6 @@ export type SchemaByType<$Item = any> = {
   section: SectionSchema<$Item>
   unknown: never
 }
-
-export type SelectModelProperties<T> = {
-  [$Key in SelectItemKeys<T>]: T[$Key] extends Model
-    ? SelectModelProperties<T[$Key]>
-    : T[$Key]
-}
-
-export type SelectItemKeys<T> = AnyGate<
-  T,
-  Exclude<
-    keyof ConditionalExcept<T, Function>,
-    `$${string}` | 'QueryBuilderType' | 'foreignKeyId'
-  >,
-  string
->
 
 type OrRecordOf<T> = T | Record<string, T>
 type OrPromiseOf<T> = T | Promise<T>
