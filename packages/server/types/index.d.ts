@@ -687,6 +687,7 @@ export type ModelFilter<$Model extends Model> =
       // TODO: validate type
       validate?: any
     }
+  | ModelFilterFunction<$Model>;
 
 export type ModelFilters<$Model extends Model> = Record<
   string,
