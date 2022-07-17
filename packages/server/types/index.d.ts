@@ -17,12 +17,14 @@ import * as Koa from 'koa'
 import koaBodyParser from 'koa-bodyparser'
 import koaCompress from 'koa-compress'
 import koaLogger from 'koa-logger'
+import mount from 'koa-mount'
 import koaPinoLogger from 'koa-pino-logger'
 import koaResponseTime from 'koa-response-time'
 import koaSession from 'koa-session'
 import * as objection from 'objection'
 import { KnexSnakeCaseMappersFactory } from 'objection'
 import { Class, ConditionalKeys, SetOptional, SetReturnType } from 'type-fest'
+import { UserConfig } from 'vite'
 
 export type Page<$Model extends Model> = {
   total: number
@@ -1371,9 +1373,18 @@ export class TimeStampedModel extends Model {
 export class UsersController<M extends Model> extends ModelController<M> {}
 
 export class AdminController extends Controller {
-  config?: AdminConfig
-  setupViteServer(): any
-  getViteConfig(): any
+  config: AdminConfig
+  mode: 'production' | 'development'
+  getPath(name: string): string
+  getDitoObject(): {
+    base: string
+    api: AdminConfig['api']
+    settings: AdminConfig['settings']
+  }
+  sendDitoObject(ctx: Koa.Context): void
+  middleware(): Koa.Middleware
+  setupViteServer(): void
+  getViteConfig(config: UserConfig): UserConfig
 }
 
 // TODO: UserMixin
