@@ -23,7 +23,7 @@ import koaResponseTime from 'koa-response-time'
 import koaSession from 'koa-session'
 import * as objection from 'objection'
 import { KnexSnakeCaseMappersFactory } from 'objection'
-import { Class, ConditionalKeys, SetOptional, SetReturnType } from 'type-fest'
+import { Class, ConditionalKeys, Constructor, SetOptional, SetReturnType } from 'type-fest'
 import { UserConfig } from 'vite'
 
 export type Page<$Model extends Model> = {
@@ -1186,54 +1186,6 @@ export type ControllerActions<$Controller extends Controller> = {
   [name: ControllerActionName]: ControllerAction<$Controller>
 }
 
-export class UserModel extends Model {
-  static options?: {
-    usernameProperty?: string
-    passwordProperty?: string
-    /**
-     * This option can be used to specify (eager) scopes to be applied when
-     * the user is deserialized from the session.
-     */
-    sessionScope?: OrArrayOf<string>
-  }
-  username: string
-  password: string
-  hash: string
-  lastLogin: Date
-
-  $verifyPassword(password: string): Promise<boolean>
-
-  $hasRole(...roles: string[]): boolean
-
-  $hasOwner(owner: UserModel): boolean
-
-  $isLoggedIn(ctx: KoaContext): boolean
-
-  // TODO: type options
-  static login(ctx: KoaContext, options: any): Promise<void>
-
-  static sessionQuery(trx: Knex.Transaction): QueryBuilder<UserModel>
-}
-
-export class TimeStampedModel extends Model {
-  // static properties: {
-  //   createdAt: {
-  //     type: 'timestamp'
-  //     default: string
-  //   }
-  //   updatedAt: {
-  //     type: 'timestamp'
-  //     default: string
-  //   }
-  // }
-  // static scopes: {
-  //   timeStamped: ModelScope<Model>
-  // }
-
-  createdAt: Date
-  updatedAt: Date
-}
-
 export class UsersController<M extends Model> extends ModelController<M> {}
 
 export class AdminController extends Controller {
@@ -1250,9 +1202,6 @@ export class AdminController extends Controller {
   setupViteServer(): void
   getViteConfig(config: UserConfig): UserConfig
 }
-
-// TODO: UserMixin
-
 type ModelControllerHookType = 'collection' | 'member'
 type ModelControllerHookKeys<
   $Keys extends string,
@@ -1786,6 +1735,94 @@ export type Mixin = (
   propertyName: string,
   propertyDescriptor: PropertyDescriptor
 ) => void
+
+type AssetFileObject = {
+  // The unique key within the storage (uuid/v4 + file extension)
+  key: string;
+  // The original filename
+  name: string;
+  // The file's mime-type
+  type: string;
+  // The amount of bytes consumed by the file
+  size: number;
+  // The public url of the file
+  url: string;
+  // The width of the image if the storage defines `config.readImageSize`
+  width: number;
+  // The height of the image if the storage defines `config.readImageSize`
+  height: number;
+}
+
+export class AssetModel extends TimeStampedModel {
+  key: string;
+  file: AssetFileObject;
+  storage: string;
+  count: number;
+}
+
+export const AssetMixin: <T extends Constructor>(target: T) =>
+  Constructor<InstanceType<T> & {
+    key: string;
+    file: AssetFileObject;
+    storage: string;
+    count: number;
+  }>
+
+type TimeStampedMixinProperties = {
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export class TimeStampedModel extends Model {
+  createdAt: Date
+  updatedAt: Date
+}
+
+export const TimeStampedMixin: <T extends Constructor>(target: T) =>
+  Constructor<InstanceType<T> & AssetMixinModelProperties>
+
+export class UserModel extends Model {
+  static options?: {
+    usernameProperty?: string
+    passwordProperty?: string
+    /**
+     * This option can be used to specify (eager) scopes to be applied when
+     * the user is deserialized from the session.
+     */
+    sessionScope?: OrArrayOf<string>
+  }
+  username: string
+  password: string
+  hash: string
+  lastLogin?: Date
+
+  $verifyPassword(password: string): Promise<boolean>
+
+  $hasRole(...roles: string[]): boolean
+
+  $hasOwner(owner: UserModel): boolean
+
+  $isLoggedIn(ctx: KoaContext): boolean
+
+  // TODO: type options
+  static login(ctx: KoaContext, options: any): Promise<void>
+
+  static sessionQuery(trx: Knex.Transaction): QueryBuilder<UserModel>
+}
+
+export class SessionModel extends Model {
+  id: string;
+  value: {[key: string]: any }
+}
+
+export const SessionMixin: <T extends Constructor>(target: T) =>
+Constructor<InstanceType<T> & AssetMixinModelProperties>
+
+export const UserMixin: <T extends Constructor>(target: T) =>
+  Constructor<InstanceType<T> & {
+    id: string;
+    value: {[key: string]: any }
+  }>
 
 /**
  * Apply the action mixin to a controller action, in order to
