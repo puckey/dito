@@ -524,111 +524,7 @@ export interface ModelRelation {
   owner?: boolean
 }
 
-/**
- * Primitive type
- * @see https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.1.1
- */
-type SchemaPrimitive = string | number | boolean | null
-interface SchemaValueArray
-  extends Array<SchemaPrimitive | SchemaValueArray | SchemaValueMap> {}
-interface SchemaValueMap {
-  [member: string]: SchemaPrimitive | SchemaValueArray | SchemaValueMap
-}
-export type SchemaValue = SchemaPrimitive | SchemaValueMap | SchemaValueArray
-interface SchemaDefinitionMap {
-  [member: string]:
-    | Schema
-    | SchemaType
-    | SchemaDefinitionArray
-    | SchemaDefinitionMap
-}
-interface SchemaDefinitionArray
-  extends Array<
-    Schema | SchemaType | SchemaDefinitionArray | SchemaDefinitionMap
-  > {}
-export type SchemaDefinition =
-  | Schema
-  // Shorthand type schema:
-  | SchemaType
-  // Shorthand array schema:
-  | SchemaDefinitionArray
-  // Shorthand object schema:
-  | SchemaDefinitionMap
-export interface Schema {
-  $id?: string
-  $ref?: string
-  $schema?: string
-  $comment?: string
-
-  /**
-   * @see https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.1
-   */
-  type?: OrArrayOf<SchemaType>
-  enum?: SchemaValue[]
-  const?: SchemaValue
-
-  /**
-   * @see https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.2
-   */
-  multipleOf?: number
-  maximum?: number
-  exclusiveMaximum?: number
-  minimum?: number
-  exclusiveMinimum?: number
-
-  /**
-   * @see https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.3
-   */
-  maxLength?: number
-  minLength?: number
-  pattern?: string
-
-  /**
-   * @see https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.4
-   */
-  items?: OrArrayOf<SchemaDefinition>
-  additionalItems?: SchemaDefinition
-  maxItems?: number
-  minItems?: number
-  uniqueItems?: boolean
-  contains?: Schema
-
-  /**
-   * @see https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.5
-   */
-  maxProperties?: number
-  minProperties?: number
-
-  required?: boolean | string[]
-
-  properties?: Record<string, SchemaDefinition>
-  patternProperties?: Record<string, SchemaDefinition>
-  additionalProperties?: boolean | SchemaDefinition
-  dependencies?: Record<string, SchemaDefinition | string[]>
-  propertyNames?: SchemaDefinition
-
-  /**
-   * @see https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.6
-   */
-  if?: SchemaDefinition
-  then?: SchemaDefinition
-  else?: SchemaDefinition
-
-  /**
-   * @see https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.7
-   */
-  allOf?: SchemaDefinition[]
-  anyOf?: SchemaDefinition[]
-  oneOf?: SchemaDefinition[]
-  not?: SchemaDefinition
-
-  /**
-   * The required format of the property.
-   *
-   * All standard JSON schema formats are supported with the addition of 'datetime'
-   * and 'timestamp' which are useful for Dito.js when creating migrations.
-   * Additional formats can be registered with a custom validator.
-   */
+export type Schema = Ajv.JSONSchemaType & {
   format?: LiteralUnion<
     | 'date'
     | 'time'
@@ -645,35 +541,6 @@ export interface Schema {
     | 'datetime'
     | 'timestamp'
   >
-
-  /**
-   * @see https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-8
-   */
-  contentMediaType?: string
-  contentEncoding?: string
-
-  /**
-   * @see https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-9
-   */
-  definitions?: Record<string, SchemaDefinition>
-
-  /**
-   * @see https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-10
-   */
-  title?: string
-  description?: string
-  /**
-   * The default value.
-   *
-   * This impacts both validation as well as migrations: For validation
-   * unless when using patch operations, missing properties are replaced
-   * with their default values. In migrations, the .defaultTo() method is
-   * called for the database column.
-   */
-  default?: SchemaValue
-  readOnly?: boolean
-  writeOnly?: boolean
-  examples?: SchemaValue
 
   // keywords/_validate.js
   validate?: (params: {
@@ -1038,10 +905,6 @@ export type ModelRelations = Record<string, ModelRelation>
 
 export type ModelProperty =
   | ModelPropertySchema
-  // Shorthand type schema:
-  | SchemaType
-  // Shorthand array schema:
-  | ModelProperty[]
   // Shorthand object schema:
   | {
       type: never
