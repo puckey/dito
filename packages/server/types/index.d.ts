@@ -524,7 +524,7 @@ export interface ModelRelation {
   owner?: boolean
 }
 
-export type Schema = Ajv.JSONSchemaType & {
+export type Schema<T = any> = Ajv.JSONSchemaType<T> & {
   format?: LiteralUnion<
     | 'date'
     | 'time'
@@ -604,7 +604,7 @@ export type Schema = Ajv.JSONSchemaType & {
   >
 }
 
-export interface ModelPropertySchema extends Schema {
+export type ModelPropertySchema<T = any> = Schema<T> & {
   /**
    * Marks the column as the primary key in the database.
    */
