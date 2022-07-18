@@ -525,7 +525,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ditojs/admin@^1.9.4, @ditojs/admin@workspace:packages/admin":
+"@ditojs/admin@^1.9.5, @ditojs/admin@workspace:packages/admin":
   version: 0.0.0-use.local
   resolution: "@ditojs/admin@workspace:packages/admin"
   dependencies:
@@ -589,7 +589,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@ditojs/server@workspace:packages/server"
   dependencies:
-    "@ditojs/admin": ^1.9.4
+    "@ditojs/admin": ^1.9.5
     "@ditojs/build": ^1.9.2
     "@ditojs/router": ^1.9.1
     "@ditojs/utils": ^1.9.1
