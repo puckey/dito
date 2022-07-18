@@ -1029,7 +1029,10 @@ export type DitoContext<$Item = any> = {
   }): void
 }
 
-export type View<$Item = any> = { resource?: Resource } & (
+export type View<$Item = any> = {
+  resource?: Form['resource'];
+  clipboard?: Form['clipboard']
+} & (
   | InputSchema<$Item>
   | RadioSchema<$Item>
   | CheckboxSchema<$Item>
