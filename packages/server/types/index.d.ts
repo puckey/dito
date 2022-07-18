@@ -23,7 +23,7 @@ import koaResponseTime from 'koa-response-time'
 import koaSession from 'koa-session'
 import * as objection from 'objection'
 import { KnexSnakeCaseMappersFactory } from 'objection'
-import { Class, ConditionalExcept, ConditionalKeys, Constructor, SetOptional, SetReturnType } from 'type-fest'
+import { Class, ConditionalExcept, ConditionalKeys, Constructor, SetReturnType } from 'type-fest'
 import { UserConfig } from 'vite'
 
 export type Page<$Model extends Model> = {
@@ -524,87 +524,7 @@ export interface ModelRelation {
   owner?: boolean
 }
 
-export type Schema<T = any> = Ajv.JSONSchemaType<T> & {
-  format?: LiteralUnion<
-    | 'date'
-    | 'time'
-    | 'uri'
-    | 'uri-reference'
-    | 'uri-template'
-    | 'email'
-    | 'hostname'
-    | 'ipv4'
-    | 'ipv6'
-    | 'uuid'
-    | 'json-pointer'
-    | 'relative-json-pointer'
-    | 'datetime'
-    | 'timestamp'
-  >
-
-  // keywords/_validate.js
-  validate?: (params: {
-    data: any
-    parentData: object | any[]
-    rootData: object | any[]
-    dataPath: string
-    parentIndex?: number
-    parentKey?: string
-    app: Application<Models>
-    validator: Validator
-    options: any
-  }) => boolean | void
-
-  // keywords/_validate.js
-  validateAsync?: (params: {
-    data: any
-    parentData: object | any[]
-    rootData: object | any[]
-    dataPath: string
-    parentIndex?: number
-    parentKey?: string
-    app: Application<Models>
-    validator: Validator
-    options: any
-  }) => Promise<boolean | void>
-
-  /**
-   * Validates a property of type 'number' or 'integer' to be in a given
-   * range, e.g. a value between 2 and 5: [2, 5]
-   */
-  range?: [number, number]
-
-  // keywords/_instanceof.js
-  /**
-   * Validates whether the value is an instance of at least one of the
-   * passed types.
-   */
-  instanceof?: OrArrayOf<
-    | LiteralUnion<
-        | 'Object'
-        | 'Array'
-        | 'Function'
-        | 'String'
-        | 'Number'
-        | 'Boolean'
-        | 'Date'
-        | 'RegExp'
-        | 'Buffer'
-      >
-    | Function
-    | typeof Object
-    | typeof Array
-    | typeof Function
-    | typeof String
-    | typeof Number
-    | typeof Boolean
-    | typeof Date
-    | typeof RegExp
-    | typeof Buffer
-  >
-}
-
-export type ModelPropertySchema<T = any> = Schema<T> & {
+export type ModelProperty<T = any> = Schema<T> & {
   /**
    * Marks the column as the primary key in the database.
    */
@@ -683,7 +603,7 @@ export type ModelFilter<$Model extends Model> =
     }
   | {
       handler: ModelFilterFunction<$Model>
-      parameters?: ActionParameter[]
+      parameters?: { [key: string]: Schema }
       // TODO: validate type
       validate?: any
     }
@@ -904,14 +824,6 @@ export type ModelClass = Class<Model>
 
 export type ModelRelations = Record<string, ModelRelation>
 
-export type ModelProperty =
-  | ModelPropertySchema
-  // Shorthand object schema:
-  | {
-      type: never
-      [k: string]: SchemaDefinition
-    }
-
 export type ModelProperties = Record<string, ModelProperty>
 
 export type ControllerAction<$Controller extends Controller> =
@@ -919,7 +831,7 @@ export type ControllerAction<$Controller extends Controller> =
   | ControllerActionHandler<$Controller>
 
 export class Controller {
-   app: Application
+  app: Application
   /**
    * Optionally provide the controller path. A default is deducted from
    * the normalized class name otherwise.
@@ -1063,23 +975,12 @@ export type BaseControllerActionOptions = {
    */
   authorize?: Authorize
   /**
-   * If automatic mapping of Koa.js' `ctx.query` object to method parameters
-   * along with their automatic validation is desired, `parameters` can
-   * be provided with an array listing each parameter in the same format
-   * Dito.js uses for its model property schema, but with added `name` keys
-   * for each parameter, in order to do the mapping.
+   * Validates action parameters and maps them to Koa's `ctx.query` object passed
+   * to the action handler.
    *
    * @see {@link https://github.com/ditojs/dito/blob/master/docs/model-properties.md Model Properties}
    */
-  parameters?:
-    | ActionParameter[]
-    | [
-        ActionParameter[],
-        {
-          // TODO: validate type
-          validate?: any
-        }
-      ]
+  parameters?: { [key: string]: Schema }
   /**
    * Provides a schema for the value returned from the action handler and
    * optionally maps the value to a key inside a returned object when it
@@ -1117,9 +1018,9 @@ export type ModelControllerActionOptions<
 }
 
 export type MemberActionParameter<M extends Model> =
-  | ActionParameter
+  | Schema
   | {
-      member: boolean
+      member: true
 
       /**
        * Sets ctx.query.
@@ -1161,16 +1062,11 @@ type ModelControllerMemberAction<
 > =
   | (
       | (Omit<ModelControllerActionOptions<$ModelController>, 'parameters'> & {
-          parameters?:
-            | MemberActionParameter<
-                modelFromModelController<$ModelController>
-              >[]
-            | [
-                MemberActionParameter<
-                  modelFromModelController<$ModelController>
-                >[],
-                any
-              ]
+          parameters?: {
+            [key: string]: MemberActionParameter<
+              modelFromModelController<$ModelController>
+            >
+          }
         })
       | ModelControllerActionHandler<$ModelController>
     )
@@ -1860,19 +1756,11 @@ export const authorize: (
 /**
  * Apply the parameters mixin to a controller action, in order to
  * apply automatic mapping of Koa.js' `ctx.query` object to method parameters
- * along with their automatic validation. The parameters mixin is supplied
- * with an array listing each parameter in the same format Dito.js uses for
- * its model property schema, but with added `name` keys for each parameter,
- * in order to do the mapping.
+ * along with their automatic validation.
  *
  * @see {@link https://github.com/ditojs/dito/blob/master/docs/model-properties.md Model Properties}
- * @deprecated
  */
-export const parameters: (
-  ...args:
-    | [(ActionParameter | MemberActionParameter<any>)[], any]
-    | (ActionParameter | MemberActionParameter<any>)[]
-) => Mixin
+export const parameters: (params: { [key: string]: Schema }) => Mixin
 
 /**
  * Apply the returns mixin to a controller action, in order to
@@ -1970,3 +1858,204 @@ export type SelectModelKeys<T> = AnyGate<
   >,
   string
 >
+
+/*----------------------- Extended from Ajv JSON Schema ----------------------*/
+
+export type Schema<T = any> = JSONSchemaType<T> & {
+  // keywords/_validate.js
+  validate?: (params: {
+    data: any
+    parentData: object | any[]
+    rootData: object | any[]
+    dataPath: string
+    parentIndex?: number
+    parentKey?: string
+    app: Application<Models>
+    validator: Validator
+    options: any
+  }) => boolean | void
+
+  // keywords/_validate.js
+  validateAsync?: (params: {
+    data: any
+    parentData: object | any[]
+    rootData: object | any[]
+    dataPath: string
+    parentIndex?: number
+    parentKey?: string
+    app: Application<Models>
+    validator: Validator
+    options: any
+  }) => Promise<boolean | void>
+
+  // keywords/_instanceof.js
+  /**
+   * Validates whether the value is an instance of at least one of the
+   * passed types.
+   */
+  instanceof?: OrArrayOf<
+    | LiteralUnion<
+        | 'Object'
+        | 'Array'
+        | 'Function'
+        | 'String'
+        | 'Number'
+        | 'Boolean'
+        | 'Date'
+        | 'RegExp'
+        | 'Buffer'
+      >
+    | Function
+    | typeof Object
+    | typeof Array
+    | typeof Function
+    | typeof String
+    | typeof Number
+    | typeof Boolean
+    | typeof Date
+    | typeof RegExp
+    | typeof Buffer
+  >
+}
+
+declare type StrictNullChecksWrapper<Name extends string, Type> = undefined extends null ? `strictNullChecks must be true in tsconfig to use ${Name}` : Type;
+declare type UnionToIntersection<U> = (U extends any ? (_: U) => void : never) extends (_: infer I) => void ? I : never;
+declare type SomeJSONSchema = UncheckedJSONSchemaType<Known, true>;
+declare type UncheckedPartialSchema<T> = Partial<UncheckedJSONSchemaType<T, true>>;
+declare type PartialSchema<T> = StrictNullChecksWrapper<"PartialSchema", UncheckedPartialSchema<T>>;
+declare type JSONType<T extends string, IsPartial extends boolean> = IsPartial extends true ? T | undefined : T;
+interface NumberKeywords {
+    minimum?: number;
+    maximum?: number;
+    exclusiveMinimum?: number;
+    exclusiveMaximum?: number;
+    multipleOf?: number;
+    format?: string;
+    range?: [number, number]
+  }
+interface StringKeywords {
+    minLength?: number;
+    maxLength?: number;
+    pattern?: string;
+    format?: LiteralUnion<
+      | 'date'
+      | 'time'
+      | 'uri'
+      | 'uri-reference'
+      | 'uri-template'
+      | 'email'
+      | 'hostname'
+      | 'ipv4'
+      | 'ipv6'
+      | 'uuid'
+      | 'json-pointer'
+      | 'relative-json-pointer'
+      | 'datetime'
+      | 'timestamp'
+    >;
+}
+declare type UncheckedJSONSchemaType<T, IsPartial extends boolean> = (// these two unions allow arbitrary unions of types
+{
+    anyOf: readonly UncheckedJSONSchemaType<T, IsPartial>[];
+} | {
+    oneOf: readonly UncheckedJSONSchemaType<T, IsPartial>[];
+} | ({
+    type: readonly (T extends number ? JSONType<"number" | "integer", IsPartial> : T extends string ? JSONType<"string", IsPartial> : T extends boolean ? JSONType<"boolean", IsPartial> : never)[];
+} & UnionToIntersection<T extends number ? NumberKeywords : T extends string ? StringKeywords : T extends boolean ? {} : never>) | ((T extends number ? {
+    type: JSONType<"number" | "integer", IsPartial>;
+} & NumberKeywords : T extends string ? ({
+    type: JSONType<"string" | "text" | "date" | "datetime" | "timestamp", IsPartial>;
+} & StringKeywords) : T extends Date ? ({
+  type: JSONType<"date" | "datetime" | "timestamp", IsPartial>;
+}) : T extends boolean ? {
+    type: JSONType<"boolean", IsPartial>;
+} : T extends readonly [any, ...any[]] ? {
+    type: JSONType<"array", IsPartial>;
+    items: {
+        readonly [K in keyof T]-?: UncheckedJSONSchemaType<T[K], false> & Nullable<T[K]>;
+    } & {
+        length: T["length"];
+    };
+    minItems: T["length"];
+} & ({
+    maxItems: T["length"];
+} | {
+    additionalItems: false;
+}) : T extends readonly any[] ? {
+    type: JSONType<"array", IsPartial>;
+    items: UncheckedJSONSchemaType<T[0], false>;
+    contains?: UncheckedPartialSchema<T[0]>;
+    minItems?: number;
+    maxItems?: number;
+    minContains?: number;
+    maxContains?: number;
+    uniqueItems?: true;
+    additionalItems?: never;
+} : T extends Record<string, any> ? {
+    type: JSONType<"object", IsPartial>;
+    additionalProperties?: boolean | UncheckedJSONSchemaType<T[string], false>;
+    unevaluatedProperties?: boolean | UncheckedJSONSchemaType<T[string], false>;
+    properties?: IsPartial extends true ? Partial<UncheckedPropertiesSchema<T>> : UncheckedPropertiesSchema<T>;
+    patternProperties?: Record<string, UncheckedJSONSchemaType<T[string], false>>;
+    propertyNames?: Omit<UncheckedJSONSchemaType<string, false>, "type"> & {
+        type?: "string";
+    };
+    dependencies?: {
+        [K in keyof T]?: Readonly<(keyof T)[]> | UncheckedPartialSchema<T>;
+    };
+    dependentRequired?: {
+        [K in keyof T]?: Readonly<(keyof T)[]>;
+    };
+    dependentSchemas?: {
+        [K in keyof T]?: UncheckedPartialSchema<T>;
+    };
+    minProperties?: number;
+    maxProperties?: number;
+} & (IsPartial extends true ? {
+    required: Readonly<(keyof T)[] | boolean>;
+} : [UncheckedRequiredMembers<T>] extends [never] ? {
+    required?: Readonly<UncheckedRequiredMembers<T>[]> | boolean;
+} : {
+    required: Readonly<UncheckedRequiredMembers<T>[]> | boolean;
+}) : T extends null ? {
+    type: JSONType<"null", IsPartial>;
+    nullable: true;
+} : never) & {
+    allOf?: Readonly<UncheckedPartialSchema<T>[]>;
+    anyOf?: Readonly<UncheckedPartialSchema<T>[]>;
+    oneOf?: Readonly<UncheckedPartialSchema<T>[]>;
+    if?: UncheckedPartialSchema<T>;
+    then?: UncheckedPartialSchema<T>;
+    else?: UncheckedPartialSchema<T>;
+    not?: UncheckedPartialSchema<T>;
+})) & {
+    [keyword: string]: any;
+    $id?: string;
+    $ref?: string;
+    $defs?: Record<string, UncheckedJSONSchemaType<Known, true>>;
+    definitions?: Record<string, UncheckedJSONSchemaType<Known, true>>;
+};
+declare type JSONSchemaType<T> = StrictNullChecksWrapper<"JSONSchemaType", UncheckedJSONSchemaType<T, false>>;
+declare type Known = {
+    [key: string]: Known;
+} | [Known, ...Known[]] | Known[] | number | string | boolean | null;
+declare type UncheckedPropertiesSchema<T> = {
+    [K in keyof T]-?: (UncheckedJSONSchemaType<T[K], false> & Nullable<T[K]>) | {
+        $ref: string;
+    };
+};
+declare type PropertiesSchema<T> = StrictNullChecksWrapper<"PropertiesSchema", UncheckedPropertiesSchema<T>>;
+declare type UncheckedRequiredMembers<T> = {
+    [K in keyof T]-?: undefined extends T[K] ? never : K;
+}[keyof T];
+declare type RequiredMembers<T> = StrictNullChecksWrapper<"RequiredMembers", UncheckedRequiredMembers<T>>;
+declare type Nullable<T> = undefined extends T ? {
+    nullable: true;
+    const?: null;
+    enum?: Readonly<(T | null)[]>;
+    default?: T | null;
+} : {
+    const?: T;
+    enum?: Readonly<T[]>;
+    default?: T;
+};
