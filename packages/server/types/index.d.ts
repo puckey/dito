@@ -1194,6 +1194,8 @@ export class UsersController<M extends Model> extends ModelController<M> {}
 export class AdminController extends Controller {
   config: AdminConfig
   mode: 'production' | 'development'
+  closed: boolean
+  koa: Koa
   getPath(name: string): string
   getDitoObject(): {
     base: string
