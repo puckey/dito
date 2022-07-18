@@ -1923,7 +1923,10 @@ export interface KnexHelper {
   isMsSQL(): boolean
 }
 
-export type Keyword = SetOptional<Ajv.KeywordDefinition, 'keyword'>
+export type Keyword =
+  | SetOptional<Ajv.MacroKeywordDefinition, 'keyword'>
+  | SetOptional<Ajv.CodeKeywordDefinition, 'keyword'>
+  | SetOptional<Ajv.FuncKeywordDefinition, 'keyword'>;
 export type Format = Ajv.ValidateFunction | Ajv.FormatDefinition<string>
 export type Id = string | number
 export type KoaContext<$State = any> = Koa.ParameterizedContext<
