@@ -919,6 +919,7 @@ export type ControllerAction<$Controller extends Controller> =
   | ControllerActionHandler<$Controller>
 
 export class Controller {
+   app: Application
   /**
    * Optionally provide the controller path. A default is deducted from
    * the normalized class name otherwise.
@@ -1000,7 +1001,6 @@ export class Controller {
    */
   log(str: string, indent?: number): void
 }
-export interface Controller extends EventEmitter {}
 
 export type ActionParameter = Schema & { name: string }
 
