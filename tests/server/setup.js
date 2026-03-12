@@ -1,5 +1,5 @@
 import ClientPgLite from 'knex-pglite'
-import { Application } from '../../packages/server/src/app/Application.js'
+import { Application } from '@ditojs/server'
 
 export function createTestApp({ models, config, ...options } = {}) {
   const app = new Application({
