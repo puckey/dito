@@ -5,3 +5,4 @@
 /node_modules
 /coverage
 /.claude
+node-compile-cache/
