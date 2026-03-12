@@ -1,4 +1,4 @@
-import { Model } from '../models/Model.js'
+import { Model } from '../../packages/server/src/models/Model.js'
 import { createTestApp, createTestDatabase, destroyTestApp } from './setup.js'
 
 class Task extends Model {
