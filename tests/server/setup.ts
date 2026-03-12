@@ -1,5 +1,5 @@
 import ClientPgLite from 'knex-pglite'
-import { Application, Model } from '@ditojs/server'
+import { Application } from '@ditojs/server'
 import type { Knex } from 'knex'
 
 interface PropertyDefinition {
@@ -9,8 +9,13 @@ interface PropertyDefinition {
   index?: boolean
 }
 
+// Use `any` for the app type since the @ditojs/server type
+// definitions don't fully cover runtime properties like `knex`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TestApp = Application & { knex: Knex }
+
 interface TestAppOptions {
-  models?: Record<string, typeof Model>
+  models?: Record<string, any>
   config?: Record<string, any>
   [key: string]: any
 }
@@ -19,10 +24,10 @@ export function createTestApp({
   models,
   config,
   ...options
-}: TestAppOptions = {}) {
-  const app = new Application({
+}: TestAppOptions = {}): TestApp {
+  return new Application({
     config: {
-      log: false,
+      log: { silent: true },
       ...config,
       knex: {
         client: ClientPgLite,
@@ -33,13 +38,12 @@ export function createTestApp({
     },
     models: models ?? {},
     ...options
-  })
-  return app
+  }) as TestApp
 }
 
 export async function createTestDatabase(
-  app: Application,
-  ...modelClasses: Array<typeof Model>
+  app: TestApp,
+  ...modelClasses: any[]
 ) {
   const models = modelClasses.length
     ? modelClasses
@@ -48,9 +52,9 @@ export async function createTestDatabase(
     const { properties } = modelClass.definition
     await app.knex.schema.createTable(
       modelClass.tableName,
-      table => {
+      (table: Knex.CreateTableBuilder) => {
         for (const [name, property] of Object.entries(
-          properties
+          properties as Record<string, PropertyDefinition>
         )) {
           // Skip Objection.js internal ref properties.
           if (name === '#id' || name === '#ref') continue
@@ -119,8 +123,6 @@ function addColumn(
   return column
 }
 
-export async function destroyTestApp(app: Application) {
-  if (app?.knex) {
-    await app.knex.destroy()
-  }
+export async function destroyTestApp(app: TestApp) {
+  await app.knex?.destroy()
 }

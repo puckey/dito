@@ -1,4 +1,5 @@
-import { Application, Model } from '@ditojs/server'
+import type { ModelProperties } from '@ditojs/server'
+import { Model } from '@ditojs/server'
 import {
   createTestApp,
   createTestDatabase,
@@ -6,7 +7,10 @@ import {
 } from './setup.js'
 
 class Task extends Model {
-  static properties = {
+  declare name: string
+  declare done: boolean
+
+  static override properties: ModelProperties = {
     name: {
       type: 'string',
       required: true
@@ -18,14 +22,17 @@ class Task extends Model {
 }
 
 class Tag extends Model {
-  static properties = {
+  declare label: string
+  declare tasks: Task[]
+
+  static override properties: ModelProperties = {
     label: {
       type: 'string',
       required: true
     }
   }
 
-  static relations = {
+  static override relations = {
     tasks: {
       relation: 'manyToMany' as const,
       from: 'Tag.id',
@@ -35,15 +42,12 @@ class Tag extends Model {
 }
 
 describe('PGlite integration', () => {
-  let app: Application
+  const app = createTestApp({
+    models: { Task, Tag }
+  })
 
   beforeAll(async () => {
-    app = createTestApp({
-      models: { Task, Tag }
-    })
     await createTestDatabase(app)
-    // Create the auto-generated join table for the
-    // many-to-many relation.
     await app.knex.schema.createTable(
       'TagTask',
       table => {
@@ -89,9 +93,13 @@ describe('PGlite integration', () => {
       name: 'Update me',
       done: false
     })
-    await Task.query().findById(task.id).patch({ done: true })
-    const updated = await Task.query().findById(task.id)
-    expect(updated.done).toBe(true)
+    await Task.query()
+      .findById(task.id)
+      .patch({ done: true })
+    const updated = await Task.query().findById(
+      task.id
+    )
+    expect(updated!.done).toBe(true)
   })
 
   it('should delete a model', async () => {
@@ -108,7 +116,9 @@ describe('PGlite integration', () => {
       name: 'Tagged task',
       done: false
     })
-    const tag = await Tag.query().insert({ label: 'urgent' })
+    const tag = await Tag.query().insert({
+      label: 'urgent'
+    })
     await app.knex('TagTask').insert({
       tagId: tag.id,
       taskId: task.id
@@ -116,8 +126,10 @@ describe('PGlite integration', () => {
     const tagWithTasks = await Tag.query()
       .findById(tag.id)
       .withGraphFetched('tasks')
-    expect(tagWithTasks.tasks).toHaveLength(1)
-    expect(tagWithTasks.tasks[0].name).toBe('Tagged task')
+    expect(tagWithTasks!.tasks).toHaveLength(1)
+    expect(tagWithTasks!.tasks[0].name).toBe(
+      'Tagged task'
+    )
   })
 
   it('should support transactions', async () => {

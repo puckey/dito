@@ -7,9 +7,7 @@
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "paths": {
-      "@ditojs/server": ["../packages/server/types/index.d.ts"]
-    }
+    "types": ["vitest/globals"]
   },
   "include": ["**/*.ts"]
 }

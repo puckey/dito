@@ -135,6 +135,21 @@ describe('Model', () => {
       QueryBuilder<Model, Model[]>
     >()
   })
+
+  it('subclass with declared properties can call query()', () => {
+    class Task extends Model {
+      declare name: string
+      declare done: boolean
+    }
+    // This currently fails because objection's query() uses
+    // `this: Constructor<M>` and the recursive $modelClass
+    // check makes Constructor<Model> incompatible with
+    // Constructor<Task>.
+    const tasks = Task.query()
+    expectTypeOf(tasks).toMatchTypeOf<
+      QueryBuilder<Task, Task[]>
+    >()
+  })
 })
 
 describe('SerializedModel', () => {
