@@ -949,10 +949,6 @@ export type ModelHooks<$Model extends Model = Model> = {
 }
 
 export class Model extends objection.Model {
-  // Override objection's query() to reference Dito's Model in
-  // the `this` constraint, preventing recursive structural
-  // incompatibility between objection.Model and Dito's Model
-  // when subclasses declare additional instance properties.
   static query<M extends Model>(
     this: Constructor<M>,
     trxOrKnex?: objection.TransactionOrKnex
