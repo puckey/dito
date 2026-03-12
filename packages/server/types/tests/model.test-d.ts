@@ -1,13 +1,13 @@
 import { expectTypeOf, assertType, describe, it } from 'vitest'
-import type {
+import {
   Model,
-  QueryBuilder,
-  SerializedModel,
-  ModelScopes,
-  ModelFilters,
-  ModelHooks,
-  ModelFilterFunction,
-  ModelProperty
+  type QueryBuilder,
+  type SerializedModel,
+  type ModelScopes,
+  type ModelFilters,
+  type ModelHooks,
+  type ModelFilterFunction,
+  type ModelProperty
 } from '../index.d.ts'
 import type { View } from '../../../admin/types/index.d.ts'
 import type { Transaction } from 'objection'
