@@ -8,9 +8,6 @@ importers:
 
   .:
     devDependencies:
-      '@electric-sql/pglite':
-        specifier: ^0.3.16
-        version: 0.3.16
       '@prettier/plugin-pug':
         specifier: ^3.4.2
         version: 3.4.2(penere@3.6.2)
@@ -62,9 +59,6 @@ importers:
       husky:
         specifier: ^9.1.7
         version: 9.1.7
-      knex-pglite:
-        specifier: ^0.13.0
-        version: 0.13.0(@electric-sql/pglite@0.3.16)(knex@3.1.0)
       lerna:
         specifier: ^9.0.5
         version: 9.0.5(@types/node@25.4.0)
@@ -492,6 +486,18 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+
+  tests:
+    dependencies:
+      '@ditojs/server':
+        specifier: workspace:^
+        version: link:../packages/server
+      '@electric-sql/pglite':
+        specifier: ^0.3.16
+        version: 0.3.16
+      knex-pglite:
+        specifier: ^0.13.0
+        version: 0.13.0(@electric-sql/pglite@0.3.16)(knex@3.1.0)
 
 packages:
 

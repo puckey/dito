@@ -2,7 +2,7 @@
 *.log
 *.cache
 *.local.*
-/node_modules
+node_modules/
 /coverage
 /.claude
 node-compile-cache/

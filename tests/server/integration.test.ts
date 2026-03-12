@@ -1,5 +1,9 @@
-import { Model } from '@ditojs/server'
-import { createTestApp, createTestDatabase, destroyTestApp } from './setup.js'
+import { Application, Model } from '@ditojs/server'
+import {
+  createTestApp,
+  createTestDatabase,
+  destroyTestApp
+} from './setup.js'
 
 class Task extends Model {
   static properties = {
@@ -23,7 +27,7 @@ class Tag extends Model {
 
   static relations = {
     tasks: {
-      relation: 'manyToMany',
+      relation: 'manyToMany' as const,
       from: 'Tag.id',
       to: 'Task.id'
     }
@@ -31,28 +35,31 @@ class Tag extends Model {
 }
 
 describe('PGlite integration', () => {
-  let app
+  let app: Application
 
   beforeAll(async () => {
     app = createTestApp({
       models: { Task, Tag }
     })
     await createTestDatabase(app)
-    // Create the auto-generated join table for the many-to-many
-    // relation (convention: `${fromModel}${toModel}`).
-    await app.knex.schema.createTable('TagTask', table => {
-      table.increments('id').primary()
-      table
-        .integer('tagId')
-        .unsigned()
-        .references('id')
-        .inTable('Tag')
-      table
-        .integer('taskId')
-        .unsigned()
-        .references('id')
-        .inTable('Task')
-    })
+    // Create the auto-generated join table for the
+    // many-to-many relation.
+    await app.knex.schema.createTable(
+      'TagTask',
+      table => {
+        table.increments('id').primary()
+        table
+          .integer('tagId')
+          .unsigned()
+          .references('id')
+          .inTable('Tag')
+        table
+          .integer('taskId')
+          .unsigned()
+          .references('id')
+          .inTable('Task')
+      }
+    )
     await app.setup()
   })
 
@@ -67,7 +74,10 @@ describe('PGlite integration', () => {
   })
 
   it('should insert and query a model', async () => {
-    await Task.query().insert({ name: 'Write tests', done: false })
+    await Task.query().insert({
+      name: 'Write tests',
+      done: false
+    })
     const tasks = await Task.query()
     expect(tasks).toHaveLength(1)
     expect(tasks[0].name).toBe('Write tests')
@@ -85,7 +95,9 @@ describe('PGlite integration', () => {
   })
 
   it('should delete a model', async () => {
-    const task = await Task.query().insert({ name: 'Delete me' })
+    const task = await Task.query().insert({
+      name: 'Delete me'
+    })
     await Task.query().deleteById(task.id)
     const result = await Task.query()
     expect(result).toHaveLength(0)
@@ -111,7 +123,9 @@ describe('PGlite integration', () => {
   it('should support transactions', async () => {
     const trx = await app.knex.transaction()
     try {
-      await Task.query(trx).insert({ name: 'In transaction' })
+      await Task.query(trx).insert({
+        name: 'In transaction'
+      })
       await trx.rollback()
     } catch {
       await trx.rollback()

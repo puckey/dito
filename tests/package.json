@@ -1,0 +1,10 @@
+{
+  "name": "@ditojs/tests",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@ditojs/server": "workspace:^",
+    "@electric-sql/pglite": "^0.3.16",
+    "knex-pglite": "^0.13.0"
+  }
+}

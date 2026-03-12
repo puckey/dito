@@ -1,7 +1,25 @@
 import ClientPgLite from 'knex-pglite'
-import { Application } from '@ditojs/server'
+import { Application, Model } from '@ditojs/server'
+import type { Knex } from 'knex'
 
-export function createTestApp({ models, config, ...options } = {}) {
+interface PropertyDefinition {
+  type?: string
+  primary?: boolean
+  nullable?: boolean
+  index?: boolean
+}
+
+interface TestAppOptions {
+  models?: Record<string, typeof Model>
+  config?: Record<string, any>
+  [key: string]: any
+}
+
+export function createTestApp({
+  models,
+  config,
+  ...options
+}: TestAppOptions = {}) {
   const app = new Application({
     config: {
       log: false,
@@ -13,13 +31,16 @@ export function createTestApp({ models, config, ...options } = {}) {
         ...config?.knex
       }
     },
-    models,
+    models: models ?? {},
     ...options
   })
   return app
 }
 
-export async function createTestDatabase(app, ...modelClasses) {
+export async function createTestDatabase(
+  app: Application,
+  ...modelClasses: Array<typeof Model>
+) {
   const models = modelClasses.length
     ? modelClasses
     : Object.values(app.models)
@@ -28,7 +49,9 @@ export async function createTestDatabase(app, ...modelClasses) {
     await app.knex.schema.createTable(
       modelClass.tableName,
       table => {
-        for (const [name, property] of Object.entries(properties)) {
+        for (const [name, property] of Object.entries(
+          properties
+        )) {
           // Skip Objection.js internal ref properties.
           if (name === '#id' || name === '#ref') continue
           addColumn(table, name, property)
@@ -38,9 +61,13 @@ export async function createTestDatabase(app, ...modelClasses) {
   }
 }
 
-function addColumn(table, name, property) {
+function addColumn(
+  table: Knex.CreateTableBuilder,
+  name: string,
+  property: PropertyDefinition
+) {
   const { type } = property
-  let column
+  let column: Knex.ColumnBuilder
 
   if (property.primary) {
     column = table.increments(name).primary()
@@ -92,7 +119,7 @@ function addColumn(table, name, property) {
   return column
 }
 
-export async function destroyTestApp(app) {
+export async function destroyTestApp(app: Application) {
   if (app?.knex) {
     await app.knex.destroy()
   }
