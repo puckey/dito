@@ -12,6 +12,7 @@
   "dependencies": {
     "@ditojs/admin": "workspace:^",
     "@ditojs/server": "workspace:^",
+    "@ditojs/utils": "workspace:^",
     "@electric-sql/pglite": "^0.3.16"
   },
   "devDependencies": {
