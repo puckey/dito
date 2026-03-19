@@ -7,11 +7,12 @@ import {
   isPromise,
   asArray,
   clone,
-  equals,
   flatten,
+  equals,
   parseDataPath,
   normalizeDataPath,
   getValueAtDataPath,
+  getEntriesAtDataPath,
   setValueAtDataPath,
   mapConcurrently,
   assignDeeply,
@@ -624,8 +625,9 @@ export class Model extends objection.Model {
     }
     // Convert plain asset files objects to AssetFile instances with references
     // to the linked storage.
-    this.constructor._forEachAssetFile(json, (file, storage) => {
+    this.constructor._mapAssetFiles(json, (file, storage) => {
       storage.convertAssetFile(file, { trusted })
+      return file
     })
     return json
   }
@@ -1002,30 +1004,21 @@ export class Model extends objection.Model {
 
   // Assets handling
 
-  static _forEachAssetFile(json, callback) {
-    const { assets } = this.definition
-    if (assets) {
-      for (const dataPath in assets) {
-        const data = getValueAtDataPath(json, dataPath, noop)
-        if (!data) continue
-        const storage = this.app.getStorage(assets[dataPath].storage)
-        forEachAssetFile(data, storage, callback)
-      }
-    }
-  }
-
   static _mapAssetFiles(json, callback) {
     const { assets } = this.definition
     if (assets) {
       for (const dataPath in assets) {
-        const data = getValueAtDataPath(json, dataPath, noop)
-        if (!data) continue
         const storage = this.app.getStorage(assets[dataPath].storage)
-        setValueAtDataPath(
-          json,
-          dataPath,
-          mapAssetFiles(data, storage, callback)
-        )
+        const map = file => callback(file, storage)
+        const entries = getEntriesAtDataPath(json, dataPath, noop)
+        for (const [path, data] of Object.entries(entries)) {
+          if (!data) continue
+          setValueAtDataPath(
+            json,
+            path,
+            isArray(data) ? data.map(map) : map(data)
+          )
+        }
       }
     }
   }
@@ -1197,33 +1190,12 @@ function loadAssetDataPaths(query, dataPaths) {
 
 const noop = () => {}
 
-function forEachAssetFile(data, storage, callback) {
-  if (isArray(data)) {
-    for (const item of data) {
-      forEachAssetFile(item, storage, callback)
-    }
-  } else if (data) {
-    callback(data, storage)
-  }
-}
-
-function mapAssetFiles(data, storage, callback) {
-  if (isArray(data)) {
-    return data.map(item => mapAssetFiles(item, storage, callback))
-  }
-  return data ? callback(data, storage) : data
-}
-
-function getValueAtAssetDataPath(item, path) {
-  return getValueAtDataPath(item, path, noop)
-}
-
 function getFilesPerAssetDataPath(items, dataPaths) {
   return dataPaths.reduce(
     (allFiles, dataPath) => {
       allFiles[dataPath] = asArray(items).reduce(
         (files, item) => {
-          const data = asArray(getValueAtAssetDataPath(item, dataPath))
+          const data = asArray(getValueAtDataPath(item, dataPath, noop))
           // Use flatten() as dataPath may contain wildcards, resulting in
           // nested files arrays.
           files.push(...flatten(data).filter(file => !!file))
