@@ -125,7 +125,7 @@ export function createTestApp(
           })
 
         const { build } = await import('vite')
-        await build(viteConfig)
+        await build(viteConfig ?? undefined)
       })
     } else {
       // After setup() registers controllers but
