@@ -6,7 +6,8 @@
     "types": "tsc --noEmit",
     "test": "pnpm run /^test:/",
     "test:types": "vitest --run --typecheck",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:prod": "DITO_E2E_BUILD=production playwright test"
   },
   "dependencies": {
     "@ditojs/admin": "workspace:^",

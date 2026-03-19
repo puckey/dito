@@ -3,6 +3,7 @@ import {
   test, expect, createModelHelpers,
   uploadFile, fixturesDir
 } from '../fixtures.js'
+import { isProduction } from '../../../utils/app.js'
 import { AssetWidget } from '../models/AssetWidget.js'
 
 const { seed, saveAndFetch } = createModelHelpers(
@@ -44,7 +45,14 @@ test.describe('drag reorder', () => {
     }
   )
 
-  test(
+  // SortableJS uses the native HTML5 drag API which
+  // is hard to simulate in headless browsers. This
+  // test triggers the reorder through the Vue
+  // component internals, which aren't available in
+  // production builds (minified). The drag behavior
+  // itself is pure client-side and unaffected by the
+  // build mode.
+  ;(isProduction ? test.skip : test)(
     'reorder via drag and persist',
     async ({ page, url }) => {
       const widgetId = await seed()

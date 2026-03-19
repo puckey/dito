@@ -1,4 +1,5 @@
 // tests/utils/app.ts
+import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 import { Application } from '@ditojs/server'
@@ -7,6 +8,9 @@ import { createPGliteKnex } from './pglite-knex.js'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TestApp = Application & { knex: Knex }
+
+export const isProduction =
+  process.env.DITO_E2E_BUILD === 'production'
 
 interface TestAppOptions {
   models?: Record<string, any>
@@ -24,17 +28,27 @@ export function createTestApp(
 ): TestApp {
   const { knex } = createPGliteKnex()
 
+  const adminRoot = options.admin?.root
+  const distDir = isProduction && adminRoot
+    ? path.join(
+        os.tmpdir(),
+        'dito-e2e-dist-' +
+        path.basename(adminRoot)
+      )
+    : undefined
+
   const app = new Application({
     config: {
       app: { normalizePaths: true },
       log: { silent: true },
-      env: 'development',
+      env: isProduction ? 'production' : 'development',
       server: { port: 0 },
       knex,
       ...options.config,
       ...(options.admin && {
         admin: {
-          ...options.admin
+          ...options.admin,
+          ...(distDir && { dist: distDir })
         }
       })
     },
@@ -53,68 +67,96 @@ export function createTestApp(
       import.meta.dirname, '../../packages'
     )
 
-    // After setup() registers controllers but before
-    // the vite dev server starts, build a vite config
-    // with our source aliases and make
-    // loadAdminViteConfig() return it so
-    // setupViteServer() uses it directly.
-    app.once('before:start', () => {
-      const viteConfig = app.defineAdminViteConfig({
-        server: {
-          hmr: { port: 0 }
-        },
-        resolve: {
-          alias: [
-            {
-              find: '@ditojs/admin/style.css',
-              replacement: path.join(
-                pkgs,
-                'admin/src/styles/style.scss'
-              )
-            },
-            {
-              find: /^@ditojs\/admin$/,
-              replacement: path.join(
-                pkgs, 'admin/src/index.js'
-              )
-            },
-            {
-              find: '@ditojs/ui/imports.scss',
-              replacement: path.join(
-                pkgs,
-                'ui/src/styles/_imports.scss'
-              )
-            },
-            {
-              find: '@ditojs/ui/src',
-              replacement: path.join(
-                pkgs, 'ui/src/index.js'
-              )
-            },
-            {
-              find: /^@ditojs\/ui$/,
-              replacement: path.join(
-                pkgs, 'ui/src/index.js'
-              )
-            }
-          ]
-        },
-        css: {
-          preprocessorOptions: {
-            scss: {
-              silenceDeprecations: ['import']
-            }
-          }
-        },
-        cacheDir: path.join(
-          os.tmpdir(),
-          'dito-e2e-vite-cache',
-          path.basename(options.admin!.root!)
+    const ditoAliases = [
+      {
+        find: '@ditojs/admin/style.css',
+        replacement: path.join(
+          pkgs,
+          'admin/src/styles/style.scss'
         )
+      },
+      {
+        find: /^@ditojs\/admin$/,
+        replacement: path.join(
+          pkgs, 'admin/src/index.js'
+        )
+      },
+      {
+        find: '@ditojs/ui/imports.scss',
+        replacement: path.join(
+          pkgs,
+          'ui/src/styles/_imports.scss'
+        )
+      },
+      {
+        find: '@ditojs/ui/src',
+        replacement: path.join(
+          pkgs, 'ui/src/index.js'
+        )
+      },
+      {
+        find: /^@ditojs\/ui$/,
+        replacement: path.join(
+          pkgs, 'ui/src/index.js'
+        )
+      }
+    ]
+
+    if (isProduction && distDir) {
+      // Build admin views to a temp directory,
+      // then serve statically in production mode.
+      app.once('before:start', async () => {
+        await fs.mkdir(distDir, { recursive: true })
+
+        const viteConfig =
+          app.defineAdminViteConfig({
+            resolve: { alias: ditoAliases },
+            css: {
+              preprocessorOptions: {
+                scss: {
+                  silenceDeprecations: ['import']
+                }
+              }
+            },
+            build: {
+              outDir: distDir,
+              emptyOutDir: true
+            }
+          })
+
+        const { build } = await import('vite')
+        await build(viteConfig)
       })
-      app.loadAdminViteConfig =
-        async () => viteConfig
-    })
+    } else {
+      // After setup() registers controllers but
+      // before the vite dev server starts, build a
+      // vite config with our source aliases and make
+      // loadAdminViteConfig() return it so
+      // setupViteServer() uses it directly.
+      app.once('before:start', () => {
+        const viteConfig =
+          app.defineAdminViteConfig({
+            server: {
+              hmr: { port: 0 }
+            },
+            resolve: { alias: ditoAliases },
+            css: {
+              preprocessorOptions: {
+                scss: {
+                  silenceDeprecations: ['import']
+                }
+              }
+            },
+            cacheDir: path.join(
+              os.tmpdir(),
+              'dito-e2e-vite-cache',
+              path.basename(options.admin!.root!)
+            )
+          })
+        app.loadAdminViteConfig =
+          async () => viteConfig
+      })
+    }
   }
 
   return app

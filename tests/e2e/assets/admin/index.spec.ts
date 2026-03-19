@@ -1,3 +1,4 @@
+import './build-mode.js'
 import './upload.js'
 import './delete.js'
 import './validation.js'
