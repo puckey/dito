@@ -1,8 +1,9 @@
 import { expectTypeOf, assertType, describe, it } from 'vitest'
+import { Model } from '@ditojs/server'
 import type {
-  Model,
   QueryBuilder,
   SerializedModel,
+  ModelScope,
   ModelScopes,
   ModelFilters,
   ModelHooks,
@@ -127,6 +128,48 @@ describe('Model', () => {
       }
     }
     assertType<ModelHooks<Model>>(hooks)
+  })
+
+  it('subclass can override scopes with its own type parameter', () => {
+    class BaseModel extends Model {
+      static override scopes: ModelScopes<BaseModel> = {
+        default: query => query.orderBy('id')
+      }
+    }
+
+    class MyModel extends BaseModel {
+      declare title: string
+
+      static override scopes: ModelScopes<MyModel> = {
+        active: query => query.where('title', 'test')
+      }
+
+      static override filters: ModelFilters<MyModel> = {
+        title: {
+          handler(query) {
+            query.where('title', 'test')
+          }
+        }
+      }
+
+      static override hooks: ModelHooks<MyModel> = {
+        'before:insert'(args) {
+          expectTypeOf(args).not.toBeAny()
+        }
+      }
+    }
+
+  })
+
+  it('narrower-typed scope is assignable to wider-typed scope', () => {
+    class MyModel extends Model {
+      declare title: string
+    }
+
+    const narrowScope: ModelScope<MyModel> = query =>
+      query.where('title', 'test')
+
+    assertType<ModelScope<Model>>(narrowScope)
   })
 
   it('QueryBuilderType uses Dito QueryBuilder', () => {

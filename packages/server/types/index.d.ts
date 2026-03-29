@@ -952,10 +952,12 @@ export type ModelProperty<T = any> = Schema<T> & {
  *
  * @see {@link https://github.com/ditojs/dito/blob/main/docs/model-scopes.md|Model Scopes}
  */
-export type ModelScope<$Model extends Model = Model> = (
-  query: QueryBuilder<$Model>,
-  applyParentScope: (query: QueryBuilder<$Model>) => QueryBuilder<$Model>
-) => QueryBuilder<$Model, any> | void
+export type ModelScope<$Model extends Model = Model> = {
+  bivarianceHack(
+    query: QueryBuilder<$Model>,
+    applyParentScope: (query: QueryBuilder<$Model>) => QueryBuilder<$Model>
+  ): QueryBuilder<$Model, any> | void
+}['bivarianceHack']
 
 /**
  * Map of scope names to scope functions. Scopes can be
@@ -973,10 +975,12 @@ export type ModelScopes<$Model extends Model = Model> = Record<
  * A filter handler function that modifies a query builder
  * based on external parameters (e.g. from URL query strings).
  */
-export type ModelFilterFunction<$Model extends Model = Model> = (
-  queryBuilder: QueryBuilder<$Model>,
-  ...args: any[]
-) => void
+export type ModelFilterFunction<$Model extends Model = Model> = {
+  bivarianceHack(
+    queryBuilder: QueryBuilder<$Model>,
+    ...args: any[]
+  ): void
+}['bivarianceHack']
 
 /**
  * Registry of known filter type names for use with
@@ -1076,9 +1080,11 @@ export interface ModelOptions extends objection.ModelOptions {
   mutable?: boolean
 }
 
-type ModelHookFunction<$Model extends Model> = (
-  args: objection.StaticHookArguments<$Model>
-) => void
+type ModelHookFunction<$Model extends Model> = {
+  bivarianceHack(
+    args: objection.StaticHookArguments<$Model>
+  ): void
+}['bivarianceHack']
 
 /**
  * Map of lifecycle hook names to handler functions. Hook
