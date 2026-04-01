@@ -852,14 +852,14 @@ export interface SchemaOptionsMixin<$Item, $Option = any> {
    * searching for specific options.
    */
   search?:
-    | ItemAccessor<$Item, { query: string }, OrPromiseOf<$Option[]>>
+    | ItemAccessor<$Item, { searchTerm: string }, OrPromiseOf<$Option[]>>
     | {
         /**
-         * Filters options based on the search `query`
+         * Filters options based on the `searchTerm`
          * available in the context. Returns matching
          * options, optionally as a promise.
          */
-        filter?: ItemAccessor<$Item, { query: string }, OrPromiseOf<$Option[]>>
+        filter?: ItemAccessor<$Item, { searchTerm: string }, OrPromiseOf<$Option[]>>
         /**
          * Debounce config for the filter. Delays
          * invocation until input pauses.
